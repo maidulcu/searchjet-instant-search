@@ -1,0 +1,9 @@
+{
+  "name": "dynamicweblab/searchjet",
+  "autoload": {
+    "psr-4": {
+      "SearchJet\\": "includes/"
+    }
+  },
+  "require": {}
+}
