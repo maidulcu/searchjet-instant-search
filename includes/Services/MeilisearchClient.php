@@ -34,18 +34,21 @@ class MeilisearchClient {
         }
 
         $payload = [
-            'id'      => $post->ID,
+            'id'      => 'post-' . $post->ID,
             'title'   => $post->post_title,
             'content' => wp_strip_all_tags($post->post_content),
-            'type'    => $post->post_type,
             'url'     => get_permalink($post),
-            'slug'    => $post->post_name,
-            'date'    => get_the_date('c', $post),
-            'modified'=> get_the_modified_date('c', $post),
             'excerpt' => wp_strip_all_tags(get_the_excerpt($post)),
-            'author'  => get_the_author_meta('display_name', $post->post_author),
-            'post_status' => $post->post_status,
+            'type'    => $post->post_type,
+            'categories' => wp_get_post_terms($post->ID, 'category', ['fields' => 'names']),
+            'tags'    => wp_get_post_terms($post->ID, 'post_tag', ['fields' => 'names']),
+            'language' => get_locale(),
         ];
+
+        // Remove empty values
+        $payload = array_filter($payload, function($value) {
+            return !empty($value) || $value === 0;
+        });
 
         if ($post->post_type === 'product' && function_exists('wc_get_product')) {
             $product = wc_get_product($post->ID);
@@ -66,8 +69,8 @@ class MeilisearchClient {
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type'  => 'application/json',
             ],
-            'body' => wp_json_encode(['items' => [$payload]]),
-            'timeout' => 10,
+            'body' => wp_json_encode(['documents' => [$payload]]),
+            'timeout' => 15,
         ]);
 
         //error_log('[SearchJet] indexPost response: ' . print_r($response, true));
@@ -103,10 +106,7 @@ class MeilisearchClient {
                 'Content-Type'  => 'application/json',
             ],
             'body' => wp_json_encode([
-                'items' => [[
-                    'id' => $post_id,
-                    'type' => $post_type,
-                ]],
+                'id' => 'post-' . $post_id
             ]),
             'timeout' => 10,
         ]);
@@ -127,25 +127,44 @@ class MeilisearchClient {
      * @param \WP_Post[] $posts An array of WordPress post objects.
      */
     public function bulkIndexPosts(array $posts, bool $fullReindex = false) {
+        // Build payload. Supports two input shapes:
+        // 1) Array of prebuilt associative arrays (from reindexBatch) → pass through
+        // 2) Array of WP_Post objects → build a minimal doc (no Woo-specific lookups here)
         $payload = array_map(function($post) {
+            // Case 1: prebuilt doc (already contains Woo fields, images, etc.)
+            if (is_array($post)) {
+                // Ensure mandatory keys exist
+                if (!isset($post['id']) || !isset($post['title'])) {
+                    return null;
+                }
+                return $post;
+            }
+
+            // Case 2: WP_Post fallback (MVP minimal fields)
+            if (!($post instanceof \WP_Post)) {
+                return null;
+            }
+
             if (empty($post->post_title)) {
                 return null; // Skip posts with no title
             }
 
             $item = [
-                'id'      => $post->ID,
-                'title'   => $post->post_title,
-                'content' => wp_strip_all_tags($post->post_content),
-                'type'    => $post->post_type,
-                'url'     => get_permalink($post),
-                'slug'    => $post->post_name,
-                'date'    => get_the_date('c', $post),
-                'modified'=> get_the_modified_date('c', $post),
-                'excerpt' => wp_strip_all_tags(get_the_excerpt($post)),
-                'author'  => get_the_author_meta('display_name', $post->post_author),
+                'id'          => $post->ID,
+                'title'       => $post->post_title,
+                'content'     => wp_strip_all_tags($post->post_content),
+                'type'        => $post->post_type,
+                'url'         => get_permalink($post),
+                'slug'        => $post->post_name,
+                'date'        => get_the_date('c', $post),
+                'modified'    => get_the_modified_date('c', $post),
+                'excerpt'     => wp_strip_all_tags(get_the_excerpt($post)),
+                'author'      => get_the_author_meta('display_name', $post->post_author),
                 'post_status' => $post->post_status,
+                'image'       => get_the_post_thumbnail_url($post->ID, 'large') ?: '',
+                'thumbnail'   => get_the_post_thumbnail_url($post->ID, 'thumbnail') ?: '',
             ];
-
+            // Add WooCommerce-specific fields if this is a product and WooCommerce is available
             if ($post->post_type === 'product' && function_exists('wc_get_product')) {
                 $product = wc_get_product($post->ID);
                 if ($product) {
@@ -154,10 +173,11 @@ class MeilisearchClient {
                     $item['categories'] = wp_get_post_terms($post->ID, 'product_cat', ['fields' => 'names']);
                     $item['tags']       = wp_get_post_terms($post->ID, 'product_tag', ['fields' => 'names']);
                     $item['stock']      = $product->get_stock_status();
-                    $item['image']      = get_the_post_thumbnail_url($post->ID, 'medium');
                 }
             }
 
+            // Drop empty values to keep payload lean
+            $item = array_filter($item, function($v) { return $v !== null && $v !== ''; });
             return $item;
         }, $posts);
 
@@ -165,8 +185,14 @@ class MeilisearchClient {
 
         $url = $this->hostUrl . '/v1/index/bulk';
 
-        if (!$this->indexName) {
-            return;
+        $body = [
+            'documents' => array_values($payload),
+        ];
+        if ($fullReindex) {
+            $body['full_reindex'] = true;
+        }
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $body['debug'] = true;
         }
 
         $request_header = [
@@ -175,10 +201,7 @@ class MeilisearchClient {
                 'Content-Type'  => 'application/json',
                 'Accept'        => 'application/json',
             ],
-            'body' => wp_json_encode([
-                'documents' => array_values($payload),
-                 'full_reindex' => $fullReindex ? true : null,
-            ]),
+            'body' => wp_json_encode($body),
             'timeout' => 60,
         ];
 
@@ -189,6 +212,8 @@ class MeilisearchClient {
 
         $response_body = wp_remote_retrieve_body($response);
         $data = json_decode($response_body, true);
+
+        //error_log('[SearchJet bulkIndexPosts] API Response: ' . print_r($response, true));
 
         if (is_wp_error($response)) {
             return [

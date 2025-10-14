@@ -27,6 +27,9 @@
 }
 
 .searchjet-hit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 12px 16px;
   border-bottom: 1px solid #eee;
   border-right: 1px solid #eee;
@@ -34,6 +37,9 @@
   border-top: 1px solid #eee;
   font-size: 16px;
   line-height: 1.4;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s;
 }
 
 .searchjet-hit:last-child {
@@ -116,4 +122,427 @@ body.search.searchjet-js-mode main .wp-block-query {
 #searchjet-page-results .searchjet-pagination a:focus {
   background-color: #0073aa;
   color: #fff;
+}
+
+
+/* Overall Container */
+#searchjet-results {
+  font-family: Arial, sans-serif;
+  width: 350px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+/* Section Titles (Products, Pages) */
+.searchjet-products,
+.searchjet-page-section {
+  padding: 15px 20px 0;
+  color: #555;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+h2.searchjet-product-title,
+h2.searchjet-page-title {
+  margin: 0;
+  font-size: 1em;
+  color: #333;
+  font-weight: normal;
+}
+
+/* Product Section */
+.searchjet-products {
+  border-bottom: 1px solid #eee;
+  margin-bottom: 10px;
+}
+
+.searchjet-product {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  gap: 15px;
+  cursor: pointer;
+}
+
+.searchjet-product:hover {
+  background-color: #f5f5f5;
+}
+
+.searchjet-product img {
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.searchjet-product-detail {
+  flex-grow: 1;
+}
+
+.searchjet-product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+
+.searchjet-product-price {
+  font-weight: bold;
+  color: #333;
+  font-size: 1em;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+.searchjet-product-excerpt {
+  font-size: 0.85em;
+  color: #777;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Page Section */
+.searchjet-page {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  gap: 15px;
+  cursor: pointer;
+}
+
+.searchjet-page:hover {
+  background-color: #f5f5f5;
+}
+
+.searchjet-page svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  fill: #555;
+}
+
+.searchjet-page-description {
+  flex-grow: 1;
+}
+
+.searchjet-page-description p {
+  font-size: 0.85em;
+  color: #777;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Specific styling for the section titles "Products" and "Pages" */
+.searchjet-results > div:nth-child(2),
+.searchjet-results > div:nth-child(4) {
+  padding: 15px 20px 0;
+  color: #555;
+  font-weight: bold;
+  font-size: 1em;
+  margin-bottom: 5px;
+}
+
+/* Adjusting the SVG size and fill for better resemblance */
+.searchjet-page svg {
+  width: 20px;
+  height: 20px;
+  fill: #666;
+}
+
+
+:root {
+  --searchjet-primary-color: #007aff;
+  --searchjet-background: #ffffff;
+  --searchjet-border-color: #e5e5e5;
+  --searchjet-text-color: #1d1d1f;
+  --searchjet-text-secondary: #6e6e73;
+  --searchjet-hover-bg: #f5f5f7;
+  --searchjet-selected-bg: var(--searchjet-primary-color);
+  --searchjet-border-radius: 8px;
+  --searchjet-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  --searchjet-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --searchjet-font-size: 14px;
+  --searchjet-spacing: 16px;
+}
+
+/* Main Results Container */
+#searchjet-results {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--searchjet-background);
+  border: 1px solid var(--searchjet-border-color);
+  border-radius: var(--searchjet-border-radius);
+  box-shadow: var(--searchjet-shadow);
+  z-index: 1000;
+  margin-top: 8px;
+  max-height: 70vh;
+  overflow-y: auto;
+  font-family: var(--searchjet-font-family);
+  font-size: var(--searchjet-font-size);
+}
+
+/* Group Titles (e.g., "Products", "Pages") */
+.searchjet-group-title {
+  font-size: var(--searchjet-font-size);
+  font-weight: 600;
+  color: var(--searchjet-text-secondary);
+  padding: var(--searchjet-spacing) var(--searchjet-spacing) calc(var(--searchjet-spacing) / 2) var(--searchjet-spacing);
+  margin: 0;
+  text-transform: capitalize;
+}
+
+/* General Hit Styling */
+.searchjet-hit {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--searchjet-spacing) * 0.75);
+  padding: calc(var(--searchjet-spacing) * 0.5) var(--searchjet-spacing);
+  text-decoration: none;
+  color: var(--searchjet-text-color);
+  transition: background-color 0.2s ease;
+}
+
+.searchjet-hit:hover {
+  background-color: var(--searchjet-hover-bg);
+}
+
+.hit-details {
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0;
+  margin: 0 12px;
+  overflow: hidden;
+}
+
+.hit-title,
+.hit-description {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Product-specific styles */
+.product-hit .product-image {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 6px;
+  background-color: #f5f5f7;
+  flex-shrink: 0;
+}
+
+.hit-price {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1d1d1f;
+  white-space: nowrap;
+}
+
+/* Page-specific styles */
+.page-hit .page-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f7;
+  border-radius: 6px;
+}
+
+.page-hit .page-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: #8a8a8e;
+}
+
+/* 'See all results' link */
+.searchjet-see-all {
+  padding: 12px 16px;
+  border-top: 1px solid #e5e5e5;
+  text-align: center;
+}
+
+.searchjet-see-all a {
+  font-size: 15px;
+  color: #007aff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.searchjet-no-results {
+    padding: 16px;
+    color: #6e6e73;
+}
+
+/* Added spacing fallback when thumbnail is hidden */
+.searchjet-hit.no-thumbnail {
+  padding-left: 20px;
+}
+
+/* Utility class for vertical spacing control */
+.hit-details > *:not(:last-child) {
+  margin-bottom: 4px;
+}
+
+/* Responsive styles for small screens */
+@media (max-width: 480px) {
+  #searchjet-results {
+    max-height: 60vh;
+    margin-top: 4px;
+  }
+
+  .searchjet-hit {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .product-hit .product-image,
+  .page-hit .page-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .hit-details {
+    margin: 0;
+  }
+
+  .hit-price {
+    font-size: 14px;
+  }
+
+  .searchjet-group-title {
+    padding: 12px 12px 6px 12px;
+    font-size: 13px;
+  }
+}
+/* Sale and Regular Price Styling */
+.hit-price .sale-price {
+  color: #d10000;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.hit-price .regular-price {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 90%;
+}
+
+/* Loading and Error States */
+.searchjet-loading {
+  padding: 16px;
+  text-align: center;
+  color: #6e6e73;
+  font-style: italic;
+}
+
+.searchjet-error {
+  padding: 16px;
+  text-align: center;
+  color: #d10000;
+  background-color: #ffeaea;
+  border-radius: 4px;
+  margin: 8px;
+}
+
+/* Keyboard Navigation */
+.searchjet-hit.selected {
+  background-color: var(--searchjet-selected-bg) !important;
+  color: white;
+}
+
+.searchjet-hit.selected .hit-title,
+.searchjet-hit.selected .hit-description,
+.searchjet-hit.selected .hit-price {
+  color: white;
+}
+
+/* Theme Integration */
+.searchjet-theme-dark {
+  --searchjet-background: #1c1c1e;
+  --searchjet-text-color: #ffffff;
+  --searchjet-text-secondary: #8e8e93;
+  --searchjet-border-color: #38383a;
+  --searchjet-hover-bg: #2c2c2e;
+}
+
+.searchjet-theme-minimal {
+  --searchjet-border-radius: 0;
+  --searchjet-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --searchjet-spacing: 12px;
+}
+
+.searchjet-theme-rounded {
+  --searchjet-border-radius: 16px;
+}
+
+/* Focus States for Accessibility */
+.searchjet-hit:focus {
+  outline: 2px solid #007aff;
+  outline-offset: -2px;
+}
+
+/* Loading Animation */
+.searchjet-loading::after {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e5e5;
+  border-top: 2px solid #007aff;
+  border-radius: 50%;
+  animation: searchjet-spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes searchjet-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Admin UI Styling */
+.searchjet-color-input {
+  width: 60px;
+  height: 40px;
+  border: 1px solid var(--searchjet-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.searchjet-checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.searchjet-checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.searchjet-checkbox-option:hover {
+  background-color: #f5f5f7;
+}
+
+.searchjet-checkbox-option input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Dynamic CSS Injection */
+.searchjet-custom-styles {
+  /* Dynamically generated styles will be injected here */
 }

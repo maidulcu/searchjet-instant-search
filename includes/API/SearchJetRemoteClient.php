@@ -108,22 +108,26 @@ class SearchJetRemoteClient {
         $url = self::getApiBaseUrl() . '/v1/index/bulk';
 
         if (empty($url) || empty(self::getApiKey())) {
-            //error_log('[SearchJet] Missing API base URL or API key for indexing.');
             return null;
         }
+
+        // Ensure payload matches API spec
+        $formatted_payload = [
+            'documents' => isset($payload['documents']) ? $payload['documents'] : [$payload],
+            'full_reindex' => $payload['full_reindex'] ?? false
+        ];
 
         $response = wp_remote_post($url, [
             'headers' => [
                 'Authorization' => 'Bearer ' . self::getApiKey(),
                 'Content-Type'  => 'application/json',
-                 'Accept'        => 'application/json',
+                'Accept'        => 'application/json',
             ],
-            'body'    => json_encode($payload),
-            'timeout' => 10,
+            'body'    => json_encode($formatted_payload),
+            'timeout' => 30,
         ]);
 
         if (is_wp_error($response)) {
-            //error_log('[SearchJet] WP Error during document index: ' . $response->get_error_message());
             return null;
         }
 
@@ -131,7 +135,6 @@ class SearchJetRemoteClient {
         $body = wp_remote_retrieve_body($response);
 
         if ($code !== 200) {
-            //error_log("[SearchJet] Index failed with status: $code, body: $body");
             return null;
         }
 
@@ -192,11 +195,6 @@ class SearchJetRemoteClient {
      * @return array|null
      */
     public static function fetchSearchAnalytics() {
-        // $cached = get_transient('searchjet_search_analytics');
-        // if ($cached !== false) {
-        //     return $cached;
-        // }
-
         $url = self::getApiBaseUrl() . '/v1/search-analytics';
 
         if (empty($url) || empty(self::getApiKey())) {
@@ -209,7 +207,7 @@ class SearchJetRemoteClient {
                 'Content-Type'  => 'application/json',
                 'Accept'        => 'application/json',
             ],
-            'timeout' => 10,
+            'timeout' => 15,
         ]);
 
         if (is_wp_error($response)) {
@@ -228,7 +226,33 @@ class SearchJetRemoteClient {
             return null;
         }
 
-        //set_transient('searchjet_search_analytics', $data, 12 * HOUR_IN_SECONDS);
         return $data;
+    }
+
+    public static function recordSearchAnalytics($logs) {
+        $url = self::getApiBaseUrl() . '/v1/search-analytics';
+
+        if (empty($url) || empty(self::getApiKey())) {
+            return null;
+        }
+
+        $payload = is_array($logs) && isset($logs[0]) ? ['logs' => $logs] : $logs;
+
+        $response = wp_remote_post($url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . self::getApiKey(),
+                'Content-Type'  => 'application/json',
+                'Accept'        => 'application/json',
+            ],
+            'body'    => json_encode($payload),
+            'timeout' => 15,
+        ]);
+
+        if (is_wp_error($response)) {
+            return null;
+        }
+
+        $code = wp_remote_retrieve_response_code($response);
+        return $code === 200;
     }
 }

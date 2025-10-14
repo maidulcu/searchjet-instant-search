@@ -1,0 +1,2401 @@
+/* SearchJet Professional Admin Styles */
+
+/* === Base Layout === */
+.searchjet-admin-wrap {
+    background: #f8f9fa;
+    margin: 0 -20px 0 -22px;
+    padding: 0;
+    min-height: calc(100vh - 32px);
+}
+
+.searchjet-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 24px 32px;
+    margin: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.searchjet-header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+}
+
+.searchjet-header .subtitle {
+    margin: 15px 0 0;
+    opacity: 0.9;
+    font-size: 16px;
+    font-weight: 400;
+    color: #111;
+}
+
+.searchjet-content {
+    padding: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* === Navigation Tabs === */
+.searchjet-nav {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin-bottom: 32px;
+    overflow: hidden;
+}
+
+.searchjet-nav .nav-tab-wrapper {
+    border: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    background: #f8f9fa;
+}
+
+.searchjet-nav .nav-tab {
+    flex: 1;
+    text-align: center;
+    padding: 16px 24px;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.searchjet-nav .nav-tab:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.searchjet-nav .nav-tab.nav-tab-active {
+    background: white;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.searchjet-nav .nav-tab.nav-tab-active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+/* === Cards & Sections === */
+.searchjet-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #e9ecef;
+}
+
+.searchjet-card h2 {
+    margin: 0 0 20px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #212529;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.searchjet-card h2::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 2px;
+}
+
+.searchjet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.searchjet-grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+.searchjet-grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* === Form Elements === */
+.searchjet-form-group {
+    margin-bottom: 24px;
+}
+
+.searchjet-form-group label {
+    display: block;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.searchjet-form-group .description {
+    color: #6c757d;
+    font-size: 13px;
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+.searchjet-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.searchjet-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.searchjet-textarea {
+    width: 100%;
+    max-width: 600px;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+.searchjet-select {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+/* === Buttons === */
+.searchjet-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    line-height: 1;
+}
+
+.searchjet-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.searchjet-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.searchjet-btn-secondary {
+    background: #f8f9fa;
+    color: #495057;
+    border: 2px solid #e9ecef;
+}
+
+.searchjet-btn-secondary:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.searchjet-btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.searchjet-btn-warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.searchjet-btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.searchjet-btn-lg {
+    padding: 16px 32px;
+    font-size: 16px;
+}
+
+.searchjet-btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+}
+
+/* === Status Indicators === */
+.searchjet-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.searchjet-status-connected {
+    background: #d4edda;
+    color: #155724;
+}
+
+.searchjet-status-disconnected {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.searchjet-status-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.searchjet-status-info {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* === Progress Bars === */
+.searchjet-progress {
+    background: #f8f9fa;
+    border-radius: 10px;
+    height: 12px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.searchjet-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 10px;
+    transition: width 0.6s ease;
+    position: relative;
+}
+
+.searchjet-progress-text {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+/* === Statistics Cards === */
+.searchjet-stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.searchjet-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.searchjet-stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 8px;
+}
+
+.searchjet-stat-label {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.searchjet-stat-change {
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.searchjet-stat-change.positive {
+    color: #28a745;
+}
+
+.searchjet-stat-change.negative {
+    color: #dc3545;
+}
+
+/* === Alerts & Notices === */
+.searchjet-alert {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.searchjet-alert-success {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.searchjet-alert-warning {
+    background: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.searchjet-alert-error {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.searchjet-alert-info {
+    background: #d1ecf1;
+    border-color: #17a2b8;
+    color: #0c5460;
+}
+
+/* === Tables === */
+.searchjet-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.searchjet-table th {
+    background: #f8f9fa;
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.searchjet-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.searchjet-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* === Loading States === */
+.searchjet-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: searchjet-spin 1s linear infinite;
+}
+
+@keyframes searchjet-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* === Responsive Design === */
+@media (max-width: 768px) {
+    .searchjet-content {
+        padding: 16px;
+    }
+    
+    .searchjet-header {
+        padding: 16px 20px;
+    }
+    
+    .searchjet-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .searchjet-nav .nav-tab {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+
+/* === Tab Content === */
+.searchjet-tab-content {
+    display: none;
+}
+
+.searchjet-tab-content.active {
+    display: block;
+    animation: searchjet-fadeIn 0.3s ease;
+}
+
+@keyframes searchjet-fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Connection Status === */
+.searchjet-connection-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.searchjet-connection-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #dc3545;
+}
+
+.searchjet-connection-indicator.connected {
+    background: #28a745;
+}
+
+/* === API Key Input === */
+.searchjet-api-key-group {
+    position: relative;
+}
+
+.searchjet-api-key-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 4px;
+}
+
+/* === Feature Cards === */
+.searchjet-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 24px 0;
+}
+
+.searchjet-feature-card {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.searchjet-feature-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.searchjet-feature-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    color: white;
+    font-size: 24px;
+}
+
+.searchjet-feature-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 8px;
+}
+
+.searchjet-feature-description {
+    font-size: 14px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+/* === Override WordPress defaults === */
+.searchjet-admin-wrap .form-table th {
+    padding: 0;
+    font-weight: 600;
+    color: #212529;
+}
+
+.searchjet-admin-wrap .form-table td {
+    padding: 0;
+}
+
+.searchjet-admin-wrap .button-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 500;
+}
+
+.searchjet-admin-wrap .button-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-1px);
+}
+
+/* === Analytics Page Styles === */
+.searchjet-analytics-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.searchjet-analytics-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.searchjet-analytics-item:last-child {
+    border-bottom: none;
+}
+
+.searchjet-analytics-item .query {
+    font-weight: 500;
+    color: #1d2327;
+    flex: 1;
+    margin-right: 16px;
+    word-break: break-word;
+}
+
+.searchjet-analytics-item .count {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 40px;
+    text-align: center;
+}
+
+.searchjet-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.searchjet-empty-state h3 {
+    margin: 0 0 8px 0;
+    color: #1d2327;
+    font-size: 18px;
+}
+
+.searchjet-empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.searchjet-table-container {
+    overflow-x: auto;
+    margin-top: 16px;
+}
+
+.searchjet-grid-4 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+@media (max-width: 768px) {
+    .searchjet-grid-4 {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .searchjet-analytics-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .searchjet-analytics-item .query {
+        margin-right: 0;
+    }
+}
+/* === Automations Page Styles === */
+.searchjet-feature-list {
+    margin-top: 20px;
+}
+
+.searchjet-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f1;
+    font-size: 14px;
+    color: #3c434a;
+}
+
+.searchjet-feature-item:last-child {
+    border-bottom: none;
+}
+
+.searchjet-feature-item .searchjet-feature-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+.searchjet-automation-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+
+.searchjet-automation-status.enabled {
+    background: #d4edda;
+    color: #155724;
+}
+
+.searchjet-automation-status.disabled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.searchjet-automation-metric {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid #e9ecef;
+}
+
+.searchjet-automation-metric-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 4px;
+}
+
+.searchjet-automation-metric-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+}
+/* === Radio Group Styles === */
+.searchjet-radio-group {
+    display: flex;
+    gap: 20px;
+    margin: 8px 0;
+}
+
+.searchjet-radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.searchjet-radio-group input[type="radio"] {
+    margin: 0;
+}
+
+/* === Automation List Styles === */
+.searchjet-automation-list {
+    margin: 16px 0;
+}
+
+.searchjet-automation-item {
+    padding: 16px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.searchjet-automation-item:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+}
+
+.searchjet-automation-item label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.searchjet-automation-item input[type="checkbox"] {
+    margin: 0;
+}
+
+.searchjet-automation-item .description {
+    margin: 0;
+    padding-left: 24px;
+    color: #6c757d;
+    font-size: 13px;
+}
+/* === Agents Page Styles === */
+.searchjet-agents-list {
+    margin: 20px 0;
+}
+
+.searchjet-agent-item {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.searchjet-agent-item:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+}
+
+.searchjet-agent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.searchjet-agent-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.searchjet-agent-info strong {
+    font-size: 16px;
+    color: #1d2327;
+}
+
+.searchjet-agent-info code {
+    background: #e9ecef;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.searchjet-agent-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.searchjet-agent-toggle input[type="checkbox"] {
+    margin: 0;
+}
+
+.searchjet-agent-description {
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.searchjet-agent-tester {
+    max-width: 600px;
+}
+
+.searchjet-code-output {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #495057;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    min-height: 100px;
+    margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+    .searchjet-agent-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .searchjet-agent-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+/* === API Key Input Group === */
+.searchjet-api-key-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchjet-api-key-group input {
+    flex: 1;
+    padding-right: 50px;
+}
+
+.searchjet-api-key-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 16px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.searchjet-api-key-toggle:hover {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+/* === Documentation Styles === */
+.searchjet-docs-nav {
+    margin-bottom: 24px;
+}
+
+.searchjet-docs-tabs {
+    display: flex;
+    gap: 4px;
+    background: #f8f9fa;
+    padding: 4px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.searchjet-docs-tab {
+    flex: 1;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.searchjet-docs-tab:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.searchjet-docs-tab.active {
+    background: white;
+    color: #667eea;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.searchjet-docs-content {
+    position: relative;
+}
+
+.searchjet-docs-section {
+    display: none;
+    animation: searchjet-fadeIn 0.3s ease;
+}
+
+.searchjet-docs-section.active {
+    display: block;
+}
+
+.searchjet-docs-section h3 {
+    color: #212529;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.searchjet-docs-section h4 {
+    color: #495057;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 24px 0 12px 0;
+}
+
+.searchjet-docs-section h5 {
+    color: #495057;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 16px 0 8px 0;
+}
+
+.searchjet-docs-section p {
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.searchjet-docs-section ul,
+.searchjet-docs-section ol {
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    padding-left: 24px;
+}
+
+.searchjet-docs-section li {
+    margin-bottom: 8px;
+}
+
+.searchjet-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 24px 0;
+}
+
+.searchjet-feature-card {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.searchjet-feature-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    background: white;
+}
+
+.searchjet-feature-card .searchjet-feature-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.searchjet-feature-card h5 {
+    color: #212529;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.searchjet-feature-card p {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.searchjet-steps {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+}
+
+.searchjet-steps li {
+    padding: 8px 0;
+    font-weight: 500;
+    color: #495057;
+}
+
+.searchjet-api-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.searchjet-api-section:last-child {
+    border-bottom: none;
+}
+
+.searchjet-api-section h4 {
+    color: #212529;
+    margin-bottom: 12px;
+}
+
+.searchjet-code-block {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    color: #495057;
+    overflow-x: auto;
+}
+
+.searchjet-code-block code {
+    background: none;
+    padding: 0;
+    color: #667eea;
+    font-weight: 500;
+}
+
+.searchjet-feature-detail {
+    margin-bottom: 32px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.searchjet-feature-detail h4 {
+    color: #212529;
+    margin: 0 0 12px 0;
+}
+
+.searchjet-feature-detail ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.searchjet-feature-detail li {
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+.searchjet-troubleshoot-item {
+    margin-bottom: 32px;
+    padding: 20px;
+    background: #fff3cd;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.searchjet-troubleshoot-item h4 {
+    color: #856404;
+    margin: 0 0 12px 0;
+}
+
+.searchjet-troubleshoot-item ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.searchjet-troubleshoot-item li {
+    margin-bottom: 8px;
+    color: #856404;
+}
+
+.searchjet-troubleshoot-item a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.searchjet-troubleshoot-item a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .searchjet-docs-tabs {
+        flex-direction: column;
+    }
+    
+    .searchjet-docs-tab {
+        text-align: left;
+    }
+    
+    .searchjet-feature-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .searchjet-docs-section h3 {
+        font-size: 20px;
+    }
+    
+    .searchjet-docs-section h4 {
+        font-size: 16px;
+    }
+}
+
+/* === Draft Indicator === */
+.searchjet-draft-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #856404;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.searchjet-draft-dot {
+    width: 8px;
+    height: 8px;
+    background: #ffc107;
+    border-radius: 50%;
+    animation: searchjet-pulse 2s infinite;
+}
+
+@keyframes searchjet-pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* === Custom Attributes Builder === */
+.searchjet-attributes-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.searchjet-attributes-presets {
+    margin-bottom: 24px;
+}
+
+.searchjet-attributes-presets h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.searchjet-preset-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.searchjet-preset-btn {
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.searchjet-preset-btn:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.searchjet-preset-btn:active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.searchjet-attributes-builder h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.searchjet-attributes-list {
+    min-height: 60px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.searchjet-attribute-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.searchjet-attribute-name {
+    line-height: 1;
+}
+
+.searchjet-remove-attr {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.searchjet-remove-attr:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.searchjet-add-attribute {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.searchjet-add-attribute .searchjet-input {
+    flex: 1;
+    max-width: none;
+}
+
+@media (max-width: 768px) {
+    .searchjet-add-attribute {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .searchjet-preset-buttons {
+        flex-direction: column;
+    }
+    
+    .searchjet-preset-btn {
+        text-align: center;
+    }
+}
+
+/* === Enhanced Exclusions === */
+.searchjet-exclusion-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.searchjet-exclusion-section:last-child {
+    border-bottom: none;
+}
+
+.searchjet-exclusion-section h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.searchjet-exclusion-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #e9ecef;
+}
+
+.searchjet-available-items h4,
+.searchjet-excluded-items h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.searchjet-items-list {
+    min-height: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 8px;
+}
+
+.searchjet-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.searchjet-item:hover {
+    background: #e9ecef;
+}
+
+.searchjet-item.excluded {
+    background: #fff3cd;
+    border-left: 3px solid #ffc107;
+}
+
+.searchjet-exclude-item,
+.searchjet-include-item {
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.searchjet-exclude-item:hover,
+.searchjet-include-item:hover {
+    background: #5a6fd8;
+}
+
+.searchjet-status-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.searchjet-status-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.searchjet-status-option:hover {
+    background: #e9ecef;
+}
+
+.searchjet-status-option input:checked + .searchjet-status-label {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.searchjet-special-options {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.searchjet-toggle-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.searchjet-toggle-slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: #ccc;
+    border-radius: 12px;
+    transition: background 0.3s ease;
+}
+
+.searchjet-toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.searchjet-toggle-option input:checked + .searchjet-toggle-slider {
+    background: #667eea;
+}
+
+.searchjet-toggle-option input:checked + .searchjet-toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.searchjet-toggle-option input {
+    display: none;
+}
+
+.searchjet-toggle-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.searchjet-mime-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #e9ecef;
+}
+
+.searchjet-mime-presets {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.searchjet-mime-preset {
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.searchjet-mime-preset:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.searchjet-mime-list {
+    min-height: 60px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.searchjet-mime-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #dc3545;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.searchjet-mime-name {
+    line-height: 1;
+}
+
+.searchjet-remove-mime {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.searchjet-remove-mime:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.searchjet-add-mime {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.searchjet-add-mime .searchjet-input {
+    flex: 1;
+    max-width: none;
+}
+
+/* === Live Preview Styles === */
+.searchjet-preview-container {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    background: #f9f9f9;
+    position: relative;
+}
+
+.searchjet-preview-search {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.searchjet-preview-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+}
+
+.searchjet-preview-results {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    max-width: 400px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    display: block;
+}
+
+.searchjet-preview-results .searchjet-hit {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #1d1d1f;
+    cursor: default;
+    transition: background-color 0.2s;
+}
+
+.searchjet-preview-results .searchjet-hit:hover {
+    background-color: #f5f5f7;
+}
+
+.searchjet-preview-results .searchjet-group-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6e6e73;
+    padding: 16px 16px 8px 16px;
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.searchjet-preview-results .hit-details {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.searchjet-preview-results .hit-title {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.searchjet-preview-results .hit-description {
+    font-size: 13px;
+    color: #6e6e73;
+    margin-bottom: 4px;
+}
+
+.searchjet-preview-results .hit-meta {
+    font-size: 12px;
+    color: #8e8e93;
+}
+
+.searchjet-preview-results .hit-price {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1d1d1f;
+    white-space: nowrap;
+}
+
+.searchjet-preview-results .product-image {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    background: #f5f5f7;
+}
+
+.searchjet-preview-results .page-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f7;
+    border-radius: 6px;
+}
+
+.searchjet-preview-results .page-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: #8a8a8e;
+}
+
+/* Theme variants */
+.searchjet-preview-results.searchjet-theme-dark {
+    background: #1c1c1e;
+    border-color: #38383a;
+    color: #ffffff;
+}
+
+.searchjet-preview-results.searchjet-theme-dark .searchjet-hit {
+    color: #ffffff;
+}
+
+.searchjet-preview-results.searchjet-theme-dark .searchjet-hit:hover {
+    background-color: #2c2c2e;
+}
+
+.searchjet-preview-results.searchjet-theme-dark .hit-description {
+    color: #8e8e93;
+}
+
+.searchjet-preview-results.searchjet-theme-minimal {
+    border-radius: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.searchjet-preview-results.searchjet-theme-rounded {
+    border-radius: 16px;
+}
+
+.searchjet-color-input {
+    width: 60px;
+    height: 40px;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.searchjet-checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.searchjet-checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.searchjet-checkbox-option:hover {
+    background-color: #f5f5f7;
+}
+
+.searchjet-checkbox-option input[type="checkbox"] {
+    margin: 0;
+}
+
+/* === Setup Wizard Styles === */
+.searchjet-setup-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    margin-bottom: 32px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.searchjet-setup-content h2 {
+    margin: 0 0 12px 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+}
+
+.searchjet-setup-content p {
+    margin: 0 0 24px 0;
+    font-size: 16px;
+    opacity: 0.9;
+    color: white;
+}
+
+.searchjet-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    animation: searchjet-fadeIn 0.3s ease;
+}
+
+.searchjet-modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: searchjet-slideUp 0.3s ease;
+}
+
+.searchjet-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.searchjet-modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.searchjet-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.searchjet-modal-close:hover {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+.searchjet-modal-body {
+    padding: 32px;
+}
+
+.searchjet-wizard-step {
+    display: none;
+    text-align: center;
+}
+
+.searchjet-wizard-step.active {
+    display: block;
+    animation: searchjet-fadeIn 0.3s ease;
+}
+
+.searchjet-wizard-step h3 {
+    margin: 0 0 24px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.searchjet-benefits {
+    display: grid;
+    gap: 20px;
+    margin: 32px 0;
+    text-align: left;
+}
+
+.searchjet-benefit {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+}
+
+.searchjet-benefit-icon {
+    font-size: 24px;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.searchjet-benefit strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 4px;
+}
+
+.searchjet-benefit br + text {
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.searchjet-connect-options {
+    margin: 24px 0;
+}
+
+.searchjet-connect-options p {
+    margin: 16px 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* === Post-Connection Checklist === */
+.searchjet-checklist-banner {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3);
+}
+
+.searchjet-checklist-banner h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+}
+
+.searchjet-checklist-banner p {
+    margin: 0 0 20px 0;
+    opacity: 0.9;
+    color: white;
+}
+
+.searchjet-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.searchjet-checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.searchjet-checklist-item.completed {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.searchjet-checklist-item.pending {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.searchjet-checklist-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.searchjet-checklist-item.completed .searchjet-checklist-icon {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.searchjet-checklist-item.pending .searchjet-checklist-icon {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.searchjet-stat-success {
+    border-left: 4px solid #28a745;
+}
+
+.searchjet-stat-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.searchjet-stat-action {
+    margin-top: 12px;
+}
+
+/* === Celebration Modals === */
+.searchjet-celebration-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100001;
+    animation: searchjet-fadeIn 0.4s ease;
+}
+
+.searchjet-celebration-content {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: searchjet-bounceIn 0.6s ease;
+}
+
+.searchjet-celebration-animation {
+    margin-bottom: 24px;
+}
+
+.searchjet-celebration-icon {
+    font-size: 64px;
+    animation: searchjet-bounce 2s infinite;
+}
+
+.searchjet-celebration-content h2 {
+    margin: 0 0 16px 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.searchjet-celebration-content p {
+    margin: 0 0 32px 0;
+    font-size: 16px;
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+.searchjet-celebration-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+@keyframes searchjet-bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes searchjet-bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* === Interactive Tutorial === */
+.searchjet-tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+    pointer-events: none;
+}
+
+.searchjet-tutorial-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    pointer-events: all;
+}
+
+.searchjet-tutorial-tooltip {
+    position: absolute;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    max-width: 320px;
+    z-index: 100001;
+    pointer-events: all;
+    animation: searchjet-slideUp 0.3s ease;
+}
+
+.searchjet-tutorial-content {
+    padding: 20px;
+}
+
+.searchjet-tutorial-content h3 {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.searchjet-tutorial-content p {
+    margin: 0 0 20px 0;
+    font-size: 14px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+.searchjet-tutorial-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.searchjet-tutorial-arrow {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
+}
+
+/* === Sample Search Demo === */
+.searchjet-demo-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #e9ecef;
+}
+
+.searchjet-demo-search {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.searchjet-demo-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 16px;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.searchjet-demo-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.searchjet-demo-results {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.searchjet-demo-result {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f3f4;
+    transition: background 0.2s ease;
+}
+
+.searchjet-demo-result:hover {
+    background: #f8f9fa;
+}
+
+.searchjet-demo-result:last-child {
+    border-bottom: none;
+}
+
+.searchjet-demo-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.searchjet-demo-details {
+    flex: 1;
+}
+
+.searchjet-demo-title {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 4px;
+}
+
+.searchjet-demo-excerpt {
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.searchjet-demo-price {
+    font-weight: 600;
+    color: #28a745;
+}
+
+.searchjet-demo-no-results {
+    padding: 20px;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .searchjet-celebration-content {
+        margin: 20px;
+        padding: 30px 20px;
+    }
+    
+    .searchjet-celebration-actions {
+        flex-direction: column;
+    }
+    
+    .searchjet-tutorial-tooltip {
+        max-width: 280px;
+        margin: 20px;
+    }
+    
+    .searchjet-demo-result {
+        padding: 12px 16px;
+    }
+}
+
+@keyframes searchjet-slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+    }
+}
+
+@media (max-width: 768px) {
+    .searchjet-modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .searchjet-modal-header,
+    .searchjet-modal-body {
+        padding: 20px;
+    }
+    
+    .searchjet-setup-banner {
+        padding: 24px 20px;
+    }
+    
+    .searchjet-setup-content h2 {
+        font-size: 24px;
+    }
+    
+    .searchjet-exclusion-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .searchjet-status-options {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .searchjet-mime-presets {
+        flex-direction: column;
+    }
+    
+    .searchjet-add-mime {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .searchjet-preview-results {
+        max-width: 100%;
+    }
+}
+
+/* === Ongoing Guidance Styles === */
+.searchjet-guidance-section {
+    margin: 32px 0;
+}
+
+.searchjet-guidance-section h3 {
+    color: #1a202c;
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.searchjet-guidance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.searchjet-guidance-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.searchjet-guidance-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.searchjet-guidance-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--guidance-color, #667eea);
+}
+
+.searchjet-guidance-warning::before {
+    --guidance-color: #f56565;
+}
+
+.searchjet-guidance-success::before {
+    --guidance-color: #48bb78;
+}
+
+.searchjet-guidance-info::before {
+    --guidance-color: #4299e1;
+}
+
+.searchjet-guidance-tip::before {
+    --guidance-color: #9f7aea;
+}
+
+.searchjet-guidance-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.searchjet-guidance-content {
+    flex: 1;
+}
+
+.searchjet-guidance-content h4 {
+    color: #1a202c;
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.searchjet-guidance-content p {
+    color: #4a5568;
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.searchjet-guidance-card .searchjet-btn {
+    margin-top: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .searchjet-guidance-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .searchjet-guidance-card {
+        padding: 16px;
+        gap: 12px;
+    }
+}
