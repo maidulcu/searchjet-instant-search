@@ -41,7 +41,7 @@ class Runner
     {
         if (!isset($schedules['searchjet_daily'])) {
             $schedules['searchjet_daily'] = [
-                'interval' => DAY_IN_SECONDS,
+                'interval' => \DAY_IN_SECONDS,
                 'display'  => __('SearchJet – Daily', 'searchjet-instant-search'),
             ];
         }
@@ -87,9 +87,9 @@ class Runner
     {
         $now     = current_time('timestamp');
         $today   = gmdate('Y-m-d', $now + (get_option('gmt_offset') * HOUR_IN_SECONDS));
-        $target  = strtotime("$today $hour:$minute:00") - (get_option('gmt_offset') * HOUR_IN_SECONDS);
+        $target  = strtotime("$today $hour:$minute:00") - (get_option('gmt_offset') * \HOUR_IN_SECONDS);
         if ($target <= $now) {
-            $target += DAY_IN_SECONDS;
+            $target += \DAY_IN_SECONDS;
         }
         return $target;
     }
@@ -130,12 +130,19 @@ class Runner
         }
 
         // Run Index Summary
-        if (self::isAllowed('index_summary', $filters) && method_exists(Events::class, 'indexSummary')) {
+        if (self::isAllowed('index_summary', $filters) && method_exists(Events::class, 'indexCompleted')) {
             try {
-                Events::indexSummary();
+                // Get document count for the summary
+                $doc_count = (int) get_option('searchjet_document_count', 0);
+                Events::indexCompleted([
+                    'added'   => $doc_count,
+                    'updated' => 0,
+                    'skipped' => 0,
+                    'source'  => 'daily_cron',
+                ]);
             } catch (\Throwable $e) {
                 if (class_exists(Logger::class)) {
-                    Logger::log('error', 'indexSummary failed', ['e' => $e->getMessage()]);
+                    Logger::log('error', 'indexCompleted failed', ['e' => $e->getMessage()]);
                 }
             }
         }
@@ -147,7 +154,7 @@ class Runner
     public static function handleManualRun(): void
     {
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions.', 'searchjet-instant-search'));
+            wp_die(esc_html__('Insufficient permissions.', 'searchjet-instant-search'));
         }
         check_admin_referer('searchjet_run_automations');
         self::runDaily();

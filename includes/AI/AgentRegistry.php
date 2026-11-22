@@ -31,6 +31,7 @@ class AgentRegistry
             'name'        => __('Recommend Search Attributes', 'searchjet-instant-search'),
             'description' => __('Suggests SearchJet attributes (and Woo fields if active) for optimal autocomplete and product cards.', 'searchjet-instant-search'),
             'action'      => 'recommend_attributes',
+            'category'    => 'configuration',
             'defaults'    => ['includeWoo' => class_exists('WooCommerce')],
         ]);
 
@@ -39,6 +40,7 @@ class AgentRegistry
             'name'        => __('Summarize Text', 'searchjet-instant-search'),
             'description' => __('Creates a short summary from longer text (first N sentences heuristic).', 'searchjet-instant-search'),
             'action'      => 'summarize_text',
+            'category'    => 'content',
             'defaults'    => ['max_sentences' => 2],
         ]);
 
@@ -47,6 +49,7 @@ class AgentRegistry
             'name'        => __('Extract Keywords', 'searchjet-instant-search'),
             'description' => __('Picks frequent keywords after removing stopwords; handy for synonyms and boosters.', 'searchjet-instant-search'),
             'action'      => 'extract_keywords',
+            'category'    => 'analysis',
             'defaults'    => ['max' => 15],
         ]);
 
@@ -85,6 +88,7 @@ class AgentRegistry
             'name'        => $name,
             'description' => isset($def['description']) ? (string) $def['description'] : '',
             'action'      => $act,
+            'category'    => isset($def['category']) ? sanitize_key((string) $def['category']) : 'general',
             'defaults'    => isset($def['defaults']) && is_array($def['defaults']) ? $def['defaults'] : [],
         ];
     }
@@ -117,6 +121,9 @@ class AgentRegistry
     public static function setEnabled(string $id, bool $enabled): bool
     {
         $id = sanitize_key($id);
+        if (!isset(self::$items[$id])) {
+            return false;
+        }
         $all = self::enabledIds();
         $had = in_array($id, $all, true);
         if ($enabled && !$had) {

@@ -16,6 +16,9 @@ class WPMLSupport {
 
         if (isset($lang_info['language_code'])) {
             $doc['language'] = $lang_info['language_code'];
+        } else {
+            // Fallback to site locale if WPML doesn't provide language info.
+            $doc['language'] = get_locale();
         }
 
         return $doc;

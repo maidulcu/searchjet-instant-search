@@ -5,5 +5,19 @@
       "SearchJet\\": "includes/"
     }
   },
-  "require": {}
+  "autoload-dev": {
+    "psr-4": {
+      "SearchJet\\Tests\\": "tests/"
+    }
+  },
+  "require": {},
+  "require-dev": {
+    "phpunit/phpunit": "^9.6",
+    "mockery/mockery": "^1.6",
+    "brain/monkey": "^2.6"
+  },
+  "scripts": {
+    "test": "phpunit",
+    "test:coverage": "phpunit --coverage-html tests/coverage"
+  }
 }

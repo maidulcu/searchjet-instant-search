@@ -4,6 +4,7 @@ namespace SearchJet\Rest;
 
 use WP_REST_Request;
 use WP_REST_Response;
+use SearchJet\Helpers\NetworkHelper;
 
 /**
  * REST controller to receive client-side SearchJet events.
@@ -55,7 +56,7 @@ class EventsController
      */
     public static function permission(WP_REST_Request $request): bool
     {
-        $require_nonce = (int) get_option('searchjet_require_event_nonce', 0) === 1;
+        $require_nonce = (int) get_option('searchjet_require_event_nonce', 1) === 1;
         if (!$require_nonce) {
             return true; // public endpoint for anonymous search logging
         }
@@ -82,7 +83,7 @@ class EventsController
         $type = sanitize_key((string) $request->get_param('type'));
 
         // Very small IP-based throttle to avoid abuse when public.
-        $ip = self::clientIp();
+        $ip = NetworkHelper::clientIp();
         $rl_key = 'sj_evt_rl_' . md5($ip . '|' . $type);
         $rl = (int) get_transient($rl_key);
         if ($rl > 240) { // ~240 events / 10 minutes per type per IP
@@ -119,28 +120,5 @@ class EventsController
             default:
                 return new WP_REST_Response(['ok' => false, 'error' => 'unsupported_type'], 400);
         }
-    }
-
-    /**
-     * Best-effort client IP extraction.
-     */
-    protected static function clientIp(): string
-    {
-        $keys = [
-            'HTTP_CF_CONNECTING_IP',
-            'HTTP_X_FORWARDED_FOR',
-            'HTTP_X_REAL_IP',
-            'HTTP_CLIENT_IP',
-            'REMOTE_ADDR',
-        ];
-        foreach ($keys as $k) {
-            if (!empty($_SERVER[$k])) {
-                $raw = (string) $_SERVER[$k];
-                // X-Forwarded-For may contain a list
-                $ip = preg_split('/\s*,\s*/', $raw)[0];
-                return $ip;
-            }
-        }
-        return '0.0.0.0';
     }
 }

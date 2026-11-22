@@ -97,11 +97,6 @@ final class Manager
         if (class_exists(__NAMESPACE__ . '\\Events') && method_exists(Events::class, 'init')) {
             Events::init();
         }
-
-        // If Schedules exists (added in v1.1.1), ensure custom schedules exist.
-        if (class_exists(__NAMESPACE__ . '\\Schedules') && method_exists(Schedules::class, 'ensure_schedules')) {
-            Schedules::ensure_schedules();
-        }
     }
 
     /**
@@ -112,7 +107,7 @@ final class Manager
     {
         // Master toggle
         register_setting(
-            'searchjet_settings',
+            'searchjet_automations',
             self::OPTION_ENABLED,
             [
                 'type'              => 'boolean',
@@ -124,7 +119,7 @@ final class Manager
 
         // Webhook URL & Secret used by Automations\Webhooks
         register_setting(
-            'searchjet_settings',
+            'searchjet_automations',
             self::OPTION_WEBHOOK_URL,
             [
                 'type'              => 'string',
@@ -135,7 +130,7 @@ final class Manager
         );
 
         register_setting(
-            'searchjet_settings',
+            'searchjet_automations',
             self::OPTION_WEBHOOK_SECRET,
             [
                 'type'              => 'string',
@@ -147,7 +142,7 @@ final class Manager
 
         // Optional filter list of enabled built-ins
         register_setting(
-            'searchjet_settings',
+            'searchjet_automations',
             self::OPTION_FILTERS,
             [
                 'type'              => 'array',
@@ -162,7 +157,7 @@ final class Manager
 
         // Security for REST events
         register_setting(
-            'searchjet_settings',
+            'searchjet_automations',
             self::OPTION_REQUIRE_NONCE,
             [
                 'type'              => 'boolean',
@@ -206,9 +201,9 @@ final class Manager
         if (!self::is_enabled()) {
             return;
         }
-        if (class_exists(__NAMESPACE__ . '\Events') && method_exists(Events::class, 'zeroResultOccurred')) {
+        if (class_exists(__NAMESPACE__ . '\Events') && method_exists(Events::class, 'recordZeroResult')) {
             try {
-                Events::zeroResultOccurred($query, (int) $total);
+                Events::recordZeroResult($query, ['total' => (int) $total]);
             } catch (\Throwable $e) {
                 if (class_exists(__NAMESPACE__ . '\Logger')) {
                     Logger::log('error', 'Failed handling zero_result', [

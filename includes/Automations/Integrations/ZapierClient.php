@@ -5,6 +5,8 @@
 
 namespace SearchJet\Automations\Integrations;
 
+use SearchJet\Helpers\NetworkHelper;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -68,7 +70,7 @@ class ZapierClient
         $body = [
             'event'   => $event,
             'ts'      => time(),
-            'site'    => self::siteContext(),
+            'site'    => NetworkHelper::siteContext(),
             'payload' => $payload,
             'meta'    => $context,
         ];
@@ -95,7 +97,7 @@ class ZapierClient
             'body'        => $json,
         ];
 
-        $res = wp_remote_post($url, $args);
+        $res = wp_safe_remote_post($url, $args);
 
         if (is_wp_error($res)) {
             return [
@@ -115,22 +117,6 @@ class ZapierClient
             'code'  => $code,
             'body'  => $parsed !== null ? $parsed : $bodyTxt,
             'error' => null,
-        ];
-    }
-
-    /**
-     * Compose site context information.
-     */
-    protected static function siteContext(): array
-    {
-        $site_id = (int) get_option('searchjet_site_id', 0);
-        $plugin_version = defined('SEARCHJET_PLUGIN_VERSION') ? SEARCHJET_PLUGIN_VERSION : 'unknown';
-        global $wp_version;
-        return [
-            'home'    => home_url('/'),
-            'site_id' => $site_id,
-            'wp'      => (string) $wp_version,
-            'plugin'  => (string) $plugin_version,
         ];
     }
 }

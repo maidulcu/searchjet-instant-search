@@ -1,0 +1,308 @@
+/* Task History - compact companion
+   Styles only the JS-injected / JS-toggled classes.
+   Static layout uses the shared design system (admin-style-enhanced + tailwind). */
+
+/* Table */
+.sj-task-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sj-task-table th {
+    background: #fafbfc;
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.sj-task-table td {
+    padding: 14px 20px;
+    font-size: 13px;
+    color: #475569;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.sj-task-table tr:last-child td {
+    border-bottom: none;
+}
+
+.sj-task-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+.sj-clickable-row {
+    cursor: pointer;
+}
+
+.sj-clickable-row:hover td {
+    background: #f1f5f9 !important;
+}
+
+.sj-task-uid {
+    font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+    font-size: 12px;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: #334155;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.sj-task-date {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.sj-task-duration {
+    font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.sj-task-details {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* Status Chips */
+.sj-status-chip-v3 {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.sj-status-chip-v3::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+}
+
+.sj-status-chip-v3.completed {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.sj-status-chip-v3.failed {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.sj-status-chip-v3.processing {
+    background: #eff6ff;
+    color: #2563eb;
+    animation: sj-pulse-status 1.5s infinite;
+}
+
+@keyframes sj-pulse-status {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.sj-status-chip-v3.pending {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.sj-status-chip-v3.canceled {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Type Badges */
+.sj-task-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.sj-task-type-badge.reindex {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.sj-task-type-badge.update {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.sj-task-type-badge.delete {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.sj-task-type-badge.settings {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+/* Error Box / Row */
+.sj-task-error-box {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 0 20px 20px;
+    font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+    font-size: 12px;
+    color: #991b1b;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+}
+
+.sj-error-row td {
+    padding: 0 !important;
+    background: #fef2f2 !important;
+}
+
+/* Error State */
+.sj-error-state {
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.sj-error-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.sj-error-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.sj-error-message {
+    font-size: 14px;
+    color: #64748b;
+}
+
+/* Empty State */
+.sj-empty-icon {
+    font-size: 56px;
+    margin-bottom: 20px;
+    opacity: 0.8;
+}
+
+.sj-empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.sj-empty-description {
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+/* Loading */
+.sj-w-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: sj-spin 0.8s linear infinite;
+}
+
+@keyframes sj-spin {
+    to { transform: rotate(360deg); }
+}
+
+.sj-loading-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Notification */
+.sj-task-notification {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 100000;
+    animation: sj-slide-up 0.3s ease;
+}
+
+@keyframes sj-slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sj-notification-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.sj-notification-success {
+    background: #059669;
+    color: white;
+}
+
+.sj-notification-error {
+    background: #dc2626;
+    color: white;
+}
+
+.sj-notification-icon {
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+/* Button loading state (JS toggles on cleanup button) */
+.sj-btn-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .sj-task-table {
+        display: block;
+        overflow-x: auto;
+    }
+}

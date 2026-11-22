@@ -133,6 +133,9 @@ class AutomationController
 
         if ($req->offsetExists('webhook_url')) {
             $url = esc_url_raw((string) $req->get_param('webhook_url'));
+            if ($url !== '' && !wp_http_validate_url($url)) {
+                return new WP_Error('searchjet_invalid_webhook_url', __('Webhook URL must be a public, resolvable URL.', 'searchjet-instant-search'), ['status' => 400]);
+            }
             update_option('searchjet_webhook_url', $url);
             $changed['webhook_url'] = $url;
         }
@@ -144,6 +147,9 @@ class AutomationController
 
         if ($req->offsetExists('zapier_webhook_url')) {
             $url = esc_url_raw((string) $req->get_param('zapier_webhook_url'));
+            if ($url !== '' && !wp_http_validate_url($url)) {
+                return new WP_Error('searchjet_invalid_zapier_url', __('Zapier webhook URL must be a public, resolvable URL.', 'searchjet-instant-search'), ['status' => 400]);
+            }
             update_option('searchjet_zapier_webhook_url', $url);
             $changed['zapier_webhook_url'] = $url;
         }

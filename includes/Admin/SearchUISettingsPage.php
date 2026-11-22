@@ -84,7 +84,12 @@ class SearchUISettingsPage {
                     $options = get_option('searchjet_ui_options', []);
                     $value = esc_attr($options[$key] ?? '');
                     $type = (strpos($key, 'color') !== false) ? 'color' : 'text';
-                    echo '<input type="' . $type . '" name="searchjet_ui_options[' . esc_attr($key) . ']" value="' . $value . '" class="regular-text" />';
+                    printf(
+                        '<input type="%1$s" name="searchjet_ui_options[%2$s]" value="%3$s" class="regular-text" />',
+                        esc_attr($type),
+                        esc_attr($key),
+                        esc_attr($value)
+                    );
                 },
                 'searchjet-ui-settings',
                 'searchjet_ui_styles'

@@ -1,0 +1,301 @@
+/*
+ * SearchJet Bulk Reindex
+ * Companion styles for the bulk reindex page (Dashboard design system).
+ */
+
+.searchjet-scope-section {
+    margin-bottom: 28px;
+}
+
+.searchjet-section-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+
+.searchjet-scope-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.searchjet-scope-option {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 18px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.searchjet-scope-option:hover {
+    border-color: #c7d2fe;
+}
+
+.searchjet-scope-option:has(input:checked),
+.searchjet-scope-option.active {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+
+.searchjet-scope-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.searchjet-scope-icon {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eef0fb;
+    color: #667eea;
+}
+
+.searchjet-scope-option:has(input:checked) .searchjet-scope-icon,
+.searchjet-scope-option.active .searchjet-scope-icon {
+    background: #667eea;
+    color: #fff;
+}
+
+.searchjet-scope-option:has(input:checked) .searchjet-scope-icon img,
+.searchjet-scope-option.active .searchjet-scope-icon img {
+    filter: brightness(0) invert(1);
+}
+
+.searchjet-scope-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.searchjet-scope-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.searchjet-scope-desc {
+    font-size: 12.5px;
+    color: #6b7280;
+    line-height: 1.45;
+}
+
+.searchjet-scope-content select,
+.searchjet-scope-content input[type="date"] {
+    margin-top: 8px;
+    width: 100%;
+    max-width: 180px;
+    padding: 6px 10px;
+    font-size: 13px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #111827;
+}
+
+.searchjet-scope-content select:disabled,
+.searchjet-scope-content input[type="date"]:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.searchjet-scope-check {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #fff;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.searchjet-scope-option:has(input:checked) .searchjet-scope-check,
+.searchjet-scope-option.active .searchjet-scope-check {
+    background: #667eea;
+    opacity: 1;
+    transform: scale(1);
+}
+
+.searchjet-modifier {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-radius: 12px;
+    margin-bottom: 28px;
+}
+
+.searchjet-modifier-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.searchjet-modifier-info strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: #c53030;
+}
+
+.searchjet-modifier-info .description {
+    font-size: 12.5px;
+    color: #9b2c2c;
+    margin: 0;
+}
+
+.searchjet-toggle-switch {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.searchjet-toggle-switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.searchjet-toggle-switch label {
+    display: block;
+    width: 48px;
+    height: 26px;
+    background: #e5e7eb;
+    border: 1px solid #d1d5db;
+    border-radius: 13px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.searchjet-toggle-switch label::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    transition: left 0.2s ease;
+}
+
+.searchjet-toggle-switch input:checked + label {
+    background: #dc3545;
+    border-color: #c82333;
+}
+
+.searchjet-toggle-switch input:checked + label::after {
+    left: 24px;
+}
+
+.searchjet-reindex-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid #f1f3f5;
+}
+
+.searchjet-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.searchjet-progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.searchjet-progress-percent {
+    font-size: 28px;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.searchjet-progress-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #e9ecef;
+}
+
+.searchjet-tip-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #eef0fb;
+    color: #667eea;
+    margin-bottom: 14px;
+}
+
+.sj-result-success {
+    padding: 14px 16px;
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 10px;
+    color: #155724;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.sj-result-error {
+    padding: 14px 16px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 10px;
+    color: #721c24;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.sj-result-success a,
+.sj-result-error a {
+    display: inline-block;
+    margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+    .searchjet-scope-options {
+        grid-template-columns: 1fr;
+    }
+
+    .searchjet-modifier {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .searchjet-progress-stats {
+        grid-template-columns: 1fr;
+    }
+}

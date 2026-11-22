@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .searchjet-gradient {
+    @apply bg-gradient-to-br from-searchjet-blue to-searchjet-blue-light;
+  }
+  
+  .searchjet-card {
+    @apply bg-white rounded-2xl shadow-lg border border-gray-200 p-6;
+  }
+  
+  .searchjet-btn-primary {
+    @apply bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5;
+  }
+}

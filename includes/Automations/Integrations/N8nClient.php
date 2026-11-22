@@ -5,6 +5,8 @@
 
 namespace SearchJet\Automations\Integrations;
 
+use SearchJet\Helpers\NetworkHelper;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -68,7 +70,7 @@ class N8nClient
         $body = [
             'event'   => $event,
             'ts'      => time(),
-            'site'    => self::siteContext(),
+            'site'    => NetworkHelper::siteContext(),
             'payload' => $payload,
             'meta'    => $context,
         ];
@@ -92,12 +94,12 @@ class N8nClient
             'body'        => $json,
         ];
 
-        $res = wp_remote_post($url, $args);
+        $res = wp_safe_remote_post($url, $args);
         $ok  = (!is_wp_error($res) && (int) wp_remote_retrieve_response_code($res) < 500);
 
         // Simple one-time retry on 5xx
         if (!$ok && !is_wp_error($res) && (int) wp_remote_retrieve_response_code($res) >= 500) {
-            $res = wp_remote_post($url, $args);
+            $res = wp_safe_remote_post($url, $args);
         }
 
         if (is_wp_error($res)) {
@@ -118,22 +120,6 @@ class N8nClient
             'code'  => $code,
             'body'  => $parsed !== null ? $parsed : $bodyTxt,
             'error' => null,
-        ];
-    }
-
-    /**
-     * Compose site context (domain, site_id if known, WP version, plugin version).
-     */
-    protected static function siteContext(): array
-    {
-        $site_id = (int) get_option('searchjet_site_id', 0);
-        $plugin_version = defined('SEARCHJET_PLUGIN_VERSION') ? SEARCHJET_PLUGIN_VERSION : 'unknown';
-        global $wp_version;
-        return [
-            'home'    => home_url('/'),
-            'site_id' => $site_id,
-            'wp'      => (string) $wp_version,
-            'plugin'  => (string) $plugin_version,
         ];
     }
 

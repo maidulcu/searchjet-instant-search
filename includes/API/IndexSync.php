@@ -2,6 +2,7 @@
 namespace SearchJet\API;
 
 use SearchJet\Services\MeilisearchClient;
+use SearchJet\Helpers\IndexScope;
 
 class IndexSync {
     /**
@@ -26,17 +27,23 @@ class IndexSync {
         );
         if (!in_array($post->post_status, $allowed_statuses)) return;
 
-        $allowed_post_types = apply_filters(
-            'searchjet_indexable_post_types',
-            get_post_types(['public' => true], 'names')
-        );
-        if (!in_array($post->post_type, $allowed_post_types)) return;
+        if (!in_array($post->post_type, IndexScope::post_types(), true)) return;
 
         // Exclude sticky posts
         if (get_option('searchjet_exclude_sticky') && is_sticky($post_id)) return;
 
-        // Exclude password-protected posts
-        if (get_option('searchjet_exclude_protected') && !empty($post->post_password)) return;
+        // Password-protected posts never go to the index. If this post was indexed before
+        // the password was set, remove it.
+        if (IndexScope::is_protected($post)) {
+            try {
+                $client = new MeilisearchClient();
+                $client->delete_post($post_id);
+                delete_transient('searchjet_document_count');
+            } catch (\Exception $e) {
+                // Nothing to remove or service unreachable: the next full reindex cleans up.
+            }
+            return;
+        }
 
         // Exclude MIME types (attachments only)
         if ($post->post_type === 'attachment') {
@@ -49,10 +56,10 @@ class IndexSync {
 
         try {
             $client = new MeilisearchClient();
-            $client->indexPost($post);
+            $client->index_post($post);
 
         } catch (\Exception $e) {
-            //error_log('[SearchJet] Indexing failed for post ID ' . $post_id . ': ' . $e->getMessage());
+            error_log('[SearchJet] Index failed for post ' . $post_id . ': ' . $e->getMessage());
         }
     }
 
@@ -66,14 +73,7 @@ class IndexSync {
         $post = get_post($post_id);
         if (!$post || $post->post_status === 'auto-draft') return;
 
-        $allowed_post_types = apply_filters(
-            'searchjet_indexable_post_types',
-            array_diff(
-                get_post_types(['public' => true], 'names'),
-                array_map('trim', explode(',', get_option('searchjet_exclude_post_types', '')))
-            )
-        );
-        if (!in_array($post->post_type, $allowed_post_types)) return;
+        if (!in_array($post->post_type, IndexScope::post_types(), true)) return;
 
         // Only allow "publish" posts to remain indexed; remove all others including drafts, trash, pending, etc.
         if ($post->post_status !== 'publish') {
@@ -84,7 +84,7 @@ class IndexSync {
                 ]);
 
             } catch (\Exception $e) {
-                // error_log('[SearchJet] Deletion failed for post ID ' . $post_id . ': ' . $e->getMessage());
+                error_log('[SearchJet] Delete failed for post ' . $post_id . ': ' . $e->getMessage());
             }
 
             delete_transient('searchjet_document_count');

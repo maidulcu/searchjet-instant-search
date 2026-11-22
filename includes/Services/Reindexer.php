@@ -1,208 +1,316 @@
 <?php
+/**
+ * Reindexer class for SearchJet plugin.
+ *
+ * @package SearchJet
+ * @since 1.3.3
+ */
+
 namespace SearchJet\Services;
 
-// Manually include the MeilisearchClient class
-require_once plugin_dir_path(__FILE__) . '/MeilisearchClient.php';
 use SearchJet\Services\MeilisearchClient;
 
+/**
+ * Handles reindexing of WordPress content for SearchJet.
+ */
 class Reindexer {
 
-    protected $client;
+	/**
+	 * MeilisearchClient instance.
+	 *
+	 * @var MeilisearchClient
+	 */
+	protected $client;
 
-    /**
-     * Constructs a Reindexer object with a MeilisearchClient instance.
-     */
-    public function __construct() {
-        $this->client = new MeilisearchClient();
-    }
+	/**
+	 * Constructs a Reindexer object with a MeilisearchClient instance.
+	 */
+	public function __construct() {
+		$this->client = new MeilisearchClient();
+	}
 
-    public function reindexBatch($offset = 0, $limit = 100, $fullReindex = false) {
-        $exclude_sticky = get_option('searchjet_exclude_sticky');
-        $include_attachments = (bool) get_option('searchjet_index_attachments', false);
-        $public_types = get_post_types(['public' => true], 'names');
-        if (!$include_attachments && isset($public_types['attachment'])) {
-            unset($public_types['attachment']);
-        }
-        $excluded_types = array_map('trim', explode(',', get_option('searchjet_exclude_post_types', '')));
+	/**
+	 * Reindex a batch of posts.
+	 *
+	 * @param int  $offset       Starting offset for the query.
+	 * @param int  $limit        Number of posts to process.
+	 * @param bool $full_reindex Whether this is a full reindex operation.
+	 * @return array|false Result array or false if no posts found.
+	 */
+	public function reindex_batch( $offset = 0, $limit = 100, $full_reindex = false ) {
+		$exclude_sticky      = get_option( 'searchjet_exclude_sticky' );
+		$include_attachments = (bool) get_option( 'searchjet_index_attachments', false );
+		$post_types          = \SearchJet\Helpers\IndexScope::post_types();
+		$post_statuses  = array_filter( array_map( 'trim', explode( ',', (string) get_option( 'searchjet_include_status', 'publish' ) ) ) );
 
-        $args = [
-            'post_type'      => apply_filters(
-                'searchjet_indexable_post_types',
-                array_diff($public_types, $excluded_types)
-            ),
-            'post_status'    => apply_filters(
-                'searchjet_indexable_post_statuses',
-                array_map('trim', explode(',', get_option('searchjet_include_status', 'publish')))
-            ),
-            'posts_per_page' => $limit,
-            'offset'         => $offset,
-            'fields'         => 'ids',
-        ];
+		if ( empty( $post_statuses ) ) {
+			$post_statuses = array( 'publish' );
+		}
 
-        if ($exclude_sticky) {
-            $args['post__not_in'] = get_option('sticky_posts');
-        }
+		$args = array(
+			'post_type'      => $post_types,
+			'post_status'    => apply_filters(
+				'searchjet_indexable_post_statuses',
+				array_values( $post_statuses )
+			),
+			'posts_per_page' => $limit,
+			'offset'         => $offset,
+			'fields'         => 'ids',
+			'wpml_language'  => 'all',
+			'suppress_filters' => true,
+		);
 
-        $query = new \WP_Query($args);
+		if ( $exclude_sticky ) {
+			$args['post__not_in'] = get_option( 'sticky_posts' );
+		}
 
-        if (!$query->have_posts()) {
-            return false;
-        }
+		if ( empty( $post_types ) ) {
+			return false;
+		}
 
-        $post_ids = $query->posts;
-        $posts = array_map('get_post', $post_ids);
+		$query = new \WP_Query( $args );
 
-        $exclude_protected = get_option('searchjet_exclude_protected');
-        if ($exclude_protected) {
-            $posts = array_filter($posts, function($post) {
-                return empty($post->post_password);
-            });
-        }
+		$post_ids = $query->have_posts() ? $query->posts : array();
 
-        $exclude_mimes = array_filter(array_map('trim', explode(',', get_option('searchjet_exclude_mime_types', ''))));
-        if (!empty($exclude_mimes)) {
-            $posts = array_filter($posts, function($post) use ($exclude_mimes) {
-                $mime_type = get_post_mime_type($post);
-                return !$mime_type || !in_array($mime_type, $exclude_mimes);
-            });
-        }
+		if ( ! $query->have_posts() ) {
+			wp_reset_postdata();
+			return false;
+		}
 
-        // Safeguard: drop attachments entirely if not indexing them
-        if (!$include_attachments) {
-            $posts = array_filter($posts, function($post) {
-                return $post->post_type !== 'attachment';
-            });
-        }
+		wp_reset_postdata();
 
-        // Clean post title and content before indexing
-        $posts = array_map(function($post) {
-            $post->post_title = $this->cleanText($post->post_title);
-            $post->post_content = $this->cleanText($post->post_content);
-            return $post;
-        }, $posts);
+		$posts = array_map( 'get_post', $post_ids );
 
-        // Build document payload (include WooCommerce product meta when available)
-        $skipped_post_ids = [];
-        $documents = array_map(function($post) use (&$skipped_post_ids) {
-            if ($post->post_title === '') {
-                $skipped_post_ids[] = $post->ID;
-                return null;
-            }
-            $type = $post->post_type ?: 'page';
-            $permalink = get_permalink($post);
-            $author = get_the_author_meta('display_name', (int) $post->post_author);
-            $dateIso = get_post_time('c', true, $post); // ISO 8601
+		// Password-protected posts never go to the index.
+		$posts = array_filter(
+			$posts,
+			function( $post ) {
+				return $post && ! \SearchJet\Helpers\IndexScope::is_protected( $post );
+			}
+		);
 
-            // Thumbnail helpers
-            $image = get_the_post_thumbnail_url($post, 'full');
-            $thumbnail = get_the_post_thumbnail_url($post, 'thumbnail');
+		$exclude_mimes = array_filter(
+			array_map( 'trim', explode( ',', get_option( 'searchjet_exclude_mime_types', '' ) ) )
+		);
 
-            // Excerpt fallback
-            $raw_excerpt = get_the_excerpt($post);
-            $excerpt = $raw_excerpt ? wp_strip_all_tags($raw_excerpt) : wp_trim_words($post->post_content, 30);
+		if ( ! empty( $exclude_mimes ) ) {
+			$posts = array_filter(
+				$posts,
+				function( $post ) use ( $exclude_mimes ) {
+					$mime_type = get_post_mime_type( $post );
+					return ! $mime_type || ! in_array( $mime_type, $exclude_mimes, true );
+				}
+			);
+		}
 
-            $doc = [
-                'id'       => (int) $post->ID,
-                'type'     => $type,
-                'title'    => $post->post_title,
-                'content'  => $post->post_content,
-                'url'      => $permalink ?: '',
-                'excerpt'  => $excerpt ?: '',
-                'author'   => $author ?: '',
-                'date'     => $dateIso ?: '',
-                'image'    => $image ?: '',
-                'thumbnail'=> $thumbnail ?: '',
-            ];
+		if ( ! $include_attachments ) {
+			$posts = array_filter(
+				$posts,
+				function( $post ) {
+					return 'attachment' !== $post->post_type;
+				}
+			);
+		}
 
-            // Attach categories/tags depending on type
-            if ($type === 'product') {
-                $cat_tax = 'product_cat';
-                $tag_tax = 'product_tag';
-            } else {
-                $cat_tax = 'category';
-                $tag_tax = 'post_tag';
-            }
-            $cats = wp_get_post_terms($post->ID, $cat_tax, ['fields' => 'names']);
-            $tags = wp_get_post_terms($post->ID, $tag_tax, ['fields' => 'names']);
-            if (!is_wp_error($cats) && !empty($cats)) { $doc['categories'] = array_values(array_unique(array_filter($cats))); }
-            if (!is_wp_error($tags) && !empty($tags)) { $doc['tags'] = array_values(array_unique(array_filter($tags))); }
+		$posts = array_map(
+			function( $post ) {
+				$post->post_title   = $this->clean_text( $post->post_title );
+				$post->post_content = $this->clean_text( $post->post_content );
+				return $post;
+			},
+			$posts
+		);
 
-            // WooCommerce-specific meta
-            if ($type === 'product' && function_exists('wc_get_product')) {
-                $product = wc_get_product($post->ID);
-                if ($product) {
-                    $sku = (string) $product->get_sku();
-                    if ($sku !== '') { $doc['sku'] = $sku; }
+		$skipped_post_ids = array();
+		$documents        = array_map(
+			function( $post ) use ( &$skipped_post_ids ) {
+				if ( '' === $post->post_title ) {
+					$skipped_post_ids[] = $post->ID;
+					return null;
+				}
 
-                    // Prices as numbers (float)
-                    $regular = $product->get_regular_price();
-                    $sale    = $product->get_sale_price();
-                    $active  = $product->get_price(); // active price shown to customer
+				$type      = $post->post_type ? $post->post_type : 'page';
+				$permalink = get_permalink( $post );
+				// When WPML is active, switch to the post's language to get the translated URL.
+				if ( function_exists( 'wpml_get_language_information' ) ) {
+					$lang_info = wpml_get_language_information( null, $post->ID );
+					if ( is_array( $lang_info ) && isset( $lang_info['language_code'] ) ) {
+						$old_lang = apply_filters( 'wpml_current_language', null );
+						do_action( 'wpml_switch_language', $lang_info['language_code'] );
+						$permalink = get_permalink( $post );
+						do_action( 'wpml_switch_language', $old_lang );
+					}
+				}
+				$author    = get_the_author_meta( 'display_name', (int) $post->post_author );
+				$date_iso  = get_post_time( 'c', true, $post );
 
-                    if (is_numeric($active)) {
-                        $doc['price'] = (float) $active;
-                    }
-                    if (is_numeric($regular)) {
-                        $doc['regular_price'] = (float) $regular;
-                    }
-                    if (is_numeric($sale)) {
-                        $doc['sale_price'] = (float) $sale;
-                    }
+				$image     = get_the_post_thumbnail_url( $post, 'full' );
+				$thumbnail = get_the_post_thumbnail_url( $post, 'thumbnail' );
 
-                    if (function_exists('get_woocommerce_currency')) {
-                        $doc['currency'] = (string) get_woocommerce_currency();
-                    }
-                    if (method_exists($product, 'get_stock_status')) {
-                        $doc['stock_status'] = (string) $product->get_stock_status();
-                    }
-                    // Ensure image/thumbnail fallback from product if missing
-                    if (empty($doc['image'])) {
-                        $prod_img_id = $product->get_image_id();
-                        if ($prod_img_id) {
-                            $doc['image'] = wp_get_attachment_image_url($prod_img_id, 'full') ?: '';
-                            $doc['thumbnail'] = wp_get_attachment_image_url($prod_img_id, 'thumbnail') ?: $doc['thumbnail'];
-                        }
-                    }
-                }
-            }
+				$raw_excerpt = get_the_excerpt( $post );
+				$excerpt     = $raw_excerpt ? wp_strip_all_tags( $raw_excerpt ) : wp_trim_words( $post->post_content, 30 );
 
-            return apply_filters('searchjet_index_document', $doc, $post);
-        }, $posts);
-        $documents = array_values(array_filter($documents));
+				$doc = array(
+					'id'        => 'post-' . $post->ID,
+					'type'      => $type,
+					'title'     => $post->post_title,
+					'content'   => $post->post_content,
+					'url'       => $permalink ? $permalink : '',
+					'excerpt'   => $excerpt ? $excerpt : '',
+					'author'    => $author ? $author : '',
+					'date'      => $date_iso ? $date_iso : '',
+					'image'     => $image ? $image : '',
+					'thumbnail' => $thumbnail ? $thumbnail : '',
+					'language'  => function_exists( 'wpml_get_language_information' ) ? ( wpml_get_language_information( null, $post->ID )['language_code'] ?? get_locale() ) : get_locale(),
+				);
 
-        if (defined('WP_DEBUG') && WP_DEBUG && !empty($skipped_post_ids)) {
-            error_log('[SearchJet Debug] Skipped posts with empty titles: ' . implode(', ', $skipped_post_ids));
-        }
+				if ( 'product' === $type ) {
+					$cat_tax = 'product_cat';
+					$tag_tax = 'product_tag';
+				} else {
+					$cat_tax = 'category';
+					$tag_tax = 'post_tag';
+				}
 
-        $result = $this->client->bulkIndexPosts($documents, $fullReindex);
+				$cats = wp_get_post_terms( $post->ID, $cat_tax, array( 'fields' => 'names' ) );
+				$tags = wp_get_post_terms( $post->ID, $tag_tax, array( 'fields' => 'names' ) );
 
-        return [
-            'count' => $result['count'] ?? count($documents),
-            'message' => $result['message'] ?? null,
-        ];
-    }
+				if ( ! is_wp_error( $cats ) && ! empty( $cats ) ) {
+					$doc['categories'] = array_values( array_unique( array_filter( $cats ) ) );
+				}
+				if ( ! is_wp_error( $tags ) && ! empty( $tags ) ) {
+					$doc['tags'] = array_values( array_unique( array_filter( $tags ) ) );
+				}
 
-    public function reindexAll() {
-        $offset = 0;
-        $limit = 100;
-        $total = 0;
+				if ( 'product' === $type && function_exists( 'wc_get_product' ) ) {
+					$product = wc_get_product( $post->ID );
+					if ( $product ) {
+						$sku = (string) $product->get_sku();
+						if ( '' !== $sku ) {
+							$doc['sku'] = $sku;
+						}
 
-        do {
-            $fullReindex = ($offset === 0);
-            $result = $this->reindexBatch($offset, $limit, $fullReindex);
-            $count = is_array($result) ? ($result['count'] ?? 0) : 0;
-            $offset += $limit;
-            $total += $count;
-        } while ($count > 0);
+						$regular = $product->get_regular_price();
+						$sale    = $product->get_sale_price();
+						$active  = $product->get_price();
 
-        return [
-            'total_indexed' => $total,
-            'message' => 'All posts reindexed successfully.',
-        ];
-    }
+						if ( is_numeric( $active ) ) {
+							$doc['price'] = (float) $active;
+						}
+						if ( is_numeric( $regular ) ) {
+							$doc['regular_price'] = (float) $regular;
+						}
+						if ( is_numeric( $sale ) ) {
+							$doc['sale_price'] = (float) $sale;
+						}
 
-    protected function cleanText($text) {
-        return trim(strip_tags($text));
-    }
+						if ( function_exists( 'get_woocommerce_currency' ) ) {
+							$doc['currency'] = (string) get_woocommerce_currency();
+						}
+						if ( method_exists( $product, 'get_stock_status' ) ) {
+							$doc['stock_status'] = (string) $product->get_stock_status();
+						}
 
+						if ( empty( $doc['image'] ) ) {
+							$prod_img_id = $product->get_image_id();
+							if ( $prod_img_id ) {
+								$doc['image']     = wp_get_attachment_image_url( $prod_img_id, 'full' ) ? wp_get_attachment_image_url( $prod_img_id, 'full' ) : '';
+								$doc['thumbnail'] = wp_get_attachment_image_url( $prod_img_id, 'thumbnail' ) ? wp_get_attachment_image_url( $prod_img_id, 'thumbnail' ) : $doc['thumbnail'];
+							}
+						}
+					}
+				}
+
+				return apply_filters( 'searchjet_index_document', $doc, $post );
+			},
+			$posts
+		);
+
+		$documents = array_values( array_filter( $documents ) );
+
+		$result = $this->client->bulk_index_posts( $documents, $full_reindex );
+
+		$return = array(
+			'count'   => isset( $result['count'] ) ? $result['count'] : count( $documents ),
+			'message' => isset( $result['message'] ) ? $result['message'] : null,
+		);
+
+		if ( isset( $result['error'] ) ) {
+			$return['error'] = $result['error'];
+		}
+		if ( isset( $result['quota'] ) ) {
+			$return['quota'] = $result['quota'];
+		}
+		if ( isset( $result['upgrade_url'] ) ) {
+			$return['upgrade_url'] = $result['upgrade_url'];
+		}
+
+		$return['scanned'] = count( $post_ids );
+
+		return $return;
+	}
+
+	/**
+	 * Reindex all posts in batches.
+	 *
+	 * @return array Result array with total indexed count and message.
+	 */
+	public function reindex_all() {
+		$max_execution_time = @ini_get( 'max_execution_time' );
+
+		$offset = 0;
+		$limit  = 100;
+		$total  = 0;
+		$start_time = time();
+
+		do {
+			if ( $max_execution_time > 0 && ( time() - $start_time ) > ( $max_execution_time * 0.8 ) ) {
+				return array(
+					'total_indexed' => $total,
+					'message'       => sprintf( 'Partial reindex: %d documents indexed so far. Some content may not have been processed due to time limits.', $total ),
+					'partial'       => true,
+				);
+			}
+
+			$full_reindex = ( 0 === $offset );
+			$result       = $this->reindex_batch( $offset, $limit, $full_reindex );
+			$count        = is_array( $result ) ? ( isset( $result['count'] ) ? $result['count'] : 0 ) : 0;
+			$scanned      = is_array( $result ) ? ( isset( $result['scanned'] ) ? $result['scanned'] : 0 ) : 0;
+
+			if ( is_array( $result ) && isset( $result['error'] ) ) {
+				return array_merge(
+					$result,
+					array(
+						'total_indexed' => $total,
+					)
+				);
+			}
+
+			$offset      += $limit;
+			$total       += $count;
+		} while ( $scanned > 0 );
+
+		if ( 0 === $total ) {
+			return array(
+				'total_indexed' => 0,
+				'message'       => 'No indexable content was found. Check the Exclusions tab post type and status settings.',
+				'error'         => 'no_indexable_content',
+			);
+		}
+
+		return array(
+			'total_indexed' => $total,
+			'message'       => sprintf( 'Reindexing completed. %d documents were sent to SearchJet.', $total ),
+		);
+	}
+
+	/**
+	 * Clean text by removing HTML tags and trimming whitespace.
+	 *
+	 * @param string $text Text to clean.
+	 * @return string Cleaned text.
+	 */
+	protected function clean_text( $text ) {
+		return trim( strip_tags( $text ) );
+	}
 }

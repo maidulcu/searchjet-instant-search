@@ -27,13 +27,15 @@ class RestController
         // Ensure sub-controllers are registered.
         add_action('rest_api_init', [self::class, 'bootstrap_controllers'], 5);
 
-        // Health/ping route for quick checks
+        // Health/ping route for quick checks (admin only)
         add_action('rest_api_init', function () {
             register_rest_route(self::NS, '/ping', [
                 [
                     'methods'             => 'GET',
                     'callback'            => [self::class, 'ping'],
-                    'permission_callback' => '__return_true',
+                    'permission_callback' => function() {
+                        return current_user_can('manage_options');
+                    },
                 ],
             ]);
         }, 20);

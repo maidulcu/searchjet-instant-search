@@ -3,129 +3,115 @@ namespace SearchJet\Frontend;
 
 class SearchOverride {
     public static function init() {
-        $mode = self::getSearchMode();
-        if ($mode === 'template') {
-            add_action('pre_get_posts', [__CLASS__, 'interceptMainSearch']);
-            add_filter('template_include', [__CLASS__, 'forceSearchTemplate']);
-        }
+        $disabled = get_option('searchjet_disable_search_mode', 0);
+        if ($disabled) return;
+        
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueSearchAssets']);
+        add_action('wp_head', [__CLASS__, 'hideDefaultSearch']);
 
-        if ($mode === 'js') {
-            if (is_search()) {
-                    add_action('wp_footer', [__CLASS__, 'renderResultsContainer']);
-            }
-        }
-        add_filter('body_class', [__CLASS__, 'addBodyClass']);
     }
 
-    protected static function getSearchMode() {
-        static $cachedMode = null;
+    public static function enqueueSearchAssets() {
+        $api_key = get_option('searchjet_hosted_api_key', '');
+        if (empty($api_key)) return;
 
-        if ($cachedMode === null) {
-            $cachedMode = get_option('searchjet_search_mode', 'js') ?: 'js';
-        }
-
-        return $cachedMode;
-    }
-
-    protected static function getApiBaseUrl() {
-       return rtrim(SEARCHJET_API_BASE_URL, '/') . '/api';
-    }
-
-    public static function interceptMainSearch($query) {
-        if ($query->is_main_query() && !is_admin() && $query->is_search()) {
-            add_filter('the_posts', [__CLASS__, 'overrideSearchResults']);
-        }
-        $query->is_search = true;
-        $query->is_home = false;
-        $query->is_archive = true;
-        $query->is_singular = false;
-    }
-
-
-    public static function overrideSearchResults($posts) {
-        $term = get_search_query();
-        $results = self::querySearchJetAPI($term);
-
-        $fake_posts = [];
-        foreach ($results as $item) {
-            $post = new \stdClass();
-            $post->ID = $item['id'] ?? 0;
-            $post->post_title = $item['title'] ?? 'No title';
-            $post->post_content = $item['excerpt'] ?? '';
-            $post->post_type = $item['post_type'] ?? 'post';
-            $post->post_date = $item['date'] ?? current_time('mysql');
-            $post->post_author = $item['author_id'] ?? 1;
-            $post->guid = $item['url'] ?? '';
-            $post->post_name = sanitize_title($item['title'] ?? '');
-            $post->filter = 'raw';
-            $fake_posts[] = new \WP_Post((object) $post);
-        }
-
-        global $wp_query;
-
-        $wp_query->posts = $fake_posts;
-        $wp_query->post_count = count($fake_posts);
-        $wp_query->found_posts = count($fake_posts);
-        $wp_query->max_num_pages = 1;
-
-        return $fake_posts;
-    }
-
-    public static function querySearchJetAPI($term) {
-
-        $clientInfo = get_option('searchjet_client_info', []);
-
-        $url = self::getApiBaseUrl() . '/v1/search';
-
-
-        $limit = get_option('posts_per_page', 10);
-        $response = wp_remote_get($url . '?q=' . urlencode($term) . '&limit=' . $limit, [
-            'headers' => [
-                'Authorization' => 'Bearer ' . ($clientInfo['public_key'] ?? ''),
-                'Accept'        => 'application/json',
-                'Content-Type'  => 'application/json',
-            ]
-        ]);
-
-
-        if (is_wp_error($response)) return [];
-
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-
-        return $data['results'] ?? [];
-    }
-
-    public static function forceSearchTemplate($template) {
-        $mode = self::getSearchMode();
+        // Enqueue page search script for search results pages
         if (is_search()) {
-            if ($mode === 'js') {
-                $page_template = locate_template('page.php');
-                return $page_template ?: $template;
-            }
-
+            wp_enqueue_script(
+                'searchjet-fullsearch',
+                SEARCHJET_PLUGIN_URL . 'assets/js/searchjet-fullsearch.js',
+                ['searchjet-connect','searchjet-helpers'], // Depend on the script that has SearchJetSettings
+                SEARCHJET_VERSION,
+                true
+            );
         }
-        return $template;
+        
+        // Settings are handled by Plugin.php to avoid conflicts
     }
 
-    public static function renderResultsContainer() {
-        ob_start(function ($content) {
-            if (is_search() && self::getSearchMode() === 'js') {
-                return preg_replace(
-                    '#<div class="wp-block-query[^>]*>.*?</div>#is',
-                    '<div id="searchjet-page-results"></div>',
-                    $content
-                );
-            }
-            return $content;
-        });
-    }
+    public static function hideDefaultSearch() {
+        if (!is_search()) return;
 
-    public static function addBodyClass($classes) {
-        if (is_search() && self::getSearchMode() === 'js') {
-            $classes[] = 'searchjet-js-mode';
+        // Not connected: leave the theme's own search results alone.
+        if (empty(get_option('searchjet_hosted_api_key', ''))) return;
+
+        // The theme's results are hidden only while SearchJet is in charge. If the script cannot
+        // show results it adds the class "searchjet-native" to <body> and the theme's results return.
+        ?>
+        <style>
+        /* WordPress Core & Generic */
+        body.search:not(.searchjet-native) .site-main > *:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .content-area .site-main > *:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) main > *:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .wp-block-query:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .wp-block-post-template:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .search-results:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .search-no-results:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        
+        /* Elementor */
+        body.search:not(.searchjet-native) .elementor-widget-posts:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .elementor-posts:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .elementor-loop-container:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        
+        /* Astra */
+        body.search:not(.searchjet-native) .ast-search-result:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .ast-archive-description:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .ast-row:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        
+        /* OceanWP */
+        body.search:not(.searchjet-native) .oceanwp-row:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .blog-entry:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .search-entry:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .ast-pagination,
+        
+        /* GeneratePress */
+        body.search:not(.searchjet-native) .inside-article:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .generate-columns-container:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        
+        /* Kadence */
+        body.search:not(.searchjet-native) .content-bg:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .loop-entry:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        
+        /* Neve */
+        body.search:not(.searchjet-native) .nv-index-posts:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .posts-wrapper:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        
+        /* Storefront */
+        body.search:not(.searchjet-native) .storefront-sorting:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .site-content article:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        
+        /* Divi */
+        body.search:not(.searchjet-native) .et_pb_posts:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .et_pb_blog_grid:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) #main-content .container:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        
+        /* Avada */
+        body.search:not(.searchjet-native) .fusion-blog-layout:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .fusion-posts-container:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        
+        /* Twenty Twenty-Three & Block Themes */
+        body.search:not(.searchjet-native) .wp-block-query-loop:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .wp-block-post-excerpt:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        
+        /* WooCommerce */
+        body.search:not(.searchjet-native) .woocommerce-result-count:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .woocommerce-ordering:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results),
+        body.search:not(.searchjet-native) .products:not(#searchjet-page-results):not(#searchjet-wrapper):not(#searchjet-search-results) {
+            display: none !important;
         }
-        return $classes;
+        
+        /* Ensure SearchJet containers are visible */
+        #searchjet-page-results,
+        #searchjet-wrapper,
+        #searchjet-search-results {
+            display: block !important;
+        }
+        </style>
+        <?php
+        // Safety net: if the SearchJet script never runs (blocked, deferred away, 404), show the
+        // theme's results after a short wait.
+        wp_print_inline_script_tag(
+            "window.addEventListener('load',function(){setTimeout(function(){if(!window.SearchJetFullSearchLoaded&&document.body){document.body.classList.add('searchjet-native');}},2500);});"
+        );
     }
-
 }

@@ -1,13 +1,23 @@
 <?php
 namespace SearchJet;
 
+use SearchJet\Shortcodes\FederatedSearch;
+use SearchJet\Shortcodes\SearchForm;
+use SearchJet\Helpers\Defaults;
+
 
 use SearchJet\API\IndexSync;
 use SearchJet\API\AnalyticsEndpoint;
+use SearchJet\API\ClickAnalyticsEndpoint;
+use SearchJet\API\AIAnswerEndpoint;
 use SearchJet\Admin\AutomationPage;
 use SearchJet\Admin\AgentsPage;
 use SearchJet\Admin\DocumentationPage;
 use SearchJet\Admin\DashboardWidget;
+use SearchJet\Admin\IndexSettingsPage;
+use SearchJet\Admin\TaskHistoryPage;
+use SearchJet\Admin\IndexHealthPage;
+use SearchJet\Admin\BulkReindexPage;
 use SearchJet\Automations\Manager as AutomationsManager;
 use SearchJet\Automations\Events as AutomationsEvents;
 use SearchJet\Integrations\SeoPluginSupport;
@@ -25,12 +35,21 @@ class Plugin {
         add_action('init', [AgentsPage::class, 'init']);
         add_action('init', [DocumentationPage::class, 'init']);
         add_action('init', [DashboardWidget::class, 'init']);
+        add_action('init', [IndexSettingsPage::class, 'init']);
+        add_action('init', [TaskHistoryPage::class, 'init']);
+        add_action('init', [IndexHealthPage::class, 'init']);
+        add_action('init', [BulkReindexPage::class, 'init']);
         add_action('init', [IndexSync::class, 'init']);
+        add_action('init', [\SearchJet\Services\TaskStatusTracker::class, 'init']);
+        FederatedSearch::init();
+        SearchForm::init();
         if (!get_option('searchjet_disable_search_mode')) {
             add_action('template_redirect', [\SearchJet\Frontend\SearchOverride::class, 'init']);
         }
         add_action('wp_enqueue_scripts', [self::class, 'enqueueFrontendAssets']);
         add_action('rest_api_init', [AnalyticsEndpoint::class, 'registerRoutes']);
+        add_action('rest_api_init', [ClickAnalyticsEndpoint::class, 'registerRoutes']);
+        add_action('rest_api_init', [AIAnswerEndpoint::class, 'registerRoutes']);
         // Admin pages: Automations & Agents
         \SearchJet\Rest\EventsController::init();
         // Boot automations core (registry, schedules, event helpers)
@@ -68,40 +87,21 @@ class Plugin {
             wp_schedule_event(time(), 'daily', 'searchjet_send_log_batch');
         }
 
+        // Schedule daily click analytics batch event if not already scheduled
+        if (!wp_next_scheduled('searchjet_send_click_batch')) {
+            wp_schedule_event(time(), 'daily', 'searchjet_send_click_batch');
+        }
+
         add_action('searchjet_send_log_batch', [self::class, 'sendLogBatch']);
+        add_action('searchjet_send_click_batch', [self::class, 'sendClickBatch']);
     }
 
     public static function activate() {
-        if (!get_option('searchjet_api_key')) {
-            update_option('searchjet_api_key', '');
-        }
-        if (!get_option('searchjet_project_id')) {
-            update_option('searchjet_project_id', '');
-        }
-        // Defaults for automations and event security
-        if (get_option('searchjet_automations_enabled', null) === null) {
-            update_option('searchjet_automations_enabled', 1);
-        }
-        if (get_option('searchjet_zr_threshold', null) === null) {
-            update_option('searchjet_zr_threshold', 5); // 5 zero-result searches
-        }
-        if (get_option('searchjet_zr_window', null) === null) {
-            update_option('searchjet_zr_window', 600); // 10 minutes
-        }
-        if (get_option('searchjet_require_event_nonce', null) === null) {
-            update_option('searchjet_require_event_nonce', 0); // public by default
-        }
-        // Set defaults for searchjet_ui_options if not already defined
-        if (get_option('searchjet_ui_options', null) === null) {
-            update_option('searchjet_ui_options', [
-                'show_thumbnail' => 1,
-                'show_price' => 1,
-                'show_rating' => 1,
-                'show_stock' => 1,
-                'show_category' => 1,
-                'highlight_term' => 1,
-                'view_all_link' => 1,
-            ]);
+        $defaults = Defaults::options();
+        foreach ($defaults as $option => $default_value) {
+            if (get_option($option, null) === null) {
+                update_option($option, $default_value);
+            }
         }
     }
 
@@ -110,6 +110,12 @@ class Plugin {
         $timestamp = wp_next_scheduled('searchjet_send_log_batch');
         if ($timestamp) {
             wp_unschedule_event($timestamp, 'searchjet_send_log_batch');
+        }
+
+        // Unschedule click analytics batch if present
+        $timestamp = wp_next_scheduled('searchjet_send_click_batch');
+        if ($timestamp) {
+            wp_unschedule_event($timestamp, 'searchjet_send_click_batch');
         }
     }
 
@@ -141,12 +147,37 @@ class Plugin {
             'timeout' => 30,
         ]);
 
-         //error_log('[SearchJet] Anytic send log batch: ' . print_r($response, true));
-
         if (!is_wp_error($response)) {
             delete_option('searchjet_log_backlog');
         } else {
             error_log('[SearchJet] Failed to send log batch: ' . $response->get_error_message());
+        }
+    }
+
+    public static function sendClickBatch() {
+        $clicks = get_option('searchjet_click_backlog', []);
+        if (empty($clicks)) return;
+
+        // Send clicks in batches of 50
+        $batch_size = 50;
+        $batches = array_chunk($clicks, $batch_size);
+        $failed_clicks = [];
+
+        foreach ($batches as $batch) {
+            foreach ($batch as $click_data) {
+                $sent = \SearchJet\API\SearchJetRemoteClient::recordClickAnalytics($click_data);
+                if (!$sent) {
+                    $failed_clicks[] = $click_data;
+                }
+            }
+        }
+
+        // Keep only failed clicks in backlog
+        if (empty($failed_clicks)) {
+            delete_option('searchjet_click_backlog');
+        } else {
+            update_option('searchjet_click_backlog', $failed_clicks, false);
+            error_log('[SearchJet] Failed to send ' . count($failed_clicks) . ' click analytics entries');
         }
     }
 
@@ -155,10 +186,27 @@ class Plugin {
             ? time()
             : (defined('SEARCHJET_VERSION') ? SEARCHJET_VERSION : '1.0.0');
 
+        // Always use SearchJet Connect with fallback to original implementation
         wp_enqueue_script(
-            'searchjet-result',
-            plugin_dir_url(dirname(__FILE__)) . 'assets/js/searchjet.js',
+            'searchjet-connect',
+             plugin_dir_url(dirname(__FILE__)) . 'assets/js/searchjet-connect.min.js',
             [],
+            null,
+            true
+        );
+
+        wp_enqueue_script(
+            'searchjet-helpers',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/js/searchjet-helpers.js',
+            [],
+            $assetVersion,
+            true
+        );
+
+        wp_enqueue_script(
+            'searchjet-autocomplete',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/js/searchjet-autocomplete.js',
+            ['searchjet-connect', 'searchjet-helpers'],
             $assetVersion,
             true
         );
@@ -185,50 +233,42 @@ class Plugin {
             'highlight_term' => 1,
             'view_all_link' => 1,
         ], get_option('searchjet_ui_options', []));
-
         $settings = [
             'logApiUrl'           => rest_url('searchjet/v1/log'),
             'eventsEndpoint'      => rest_url('searchjet/v1/event'),
+            'clickAnalyticsEndpoint' => rest_url('searchjet/v1/analytics/click'),
+            'aiAnswerEndpoint'    => rest_url('searchjet/v1/ai/answer'),
+            'aiUsageEndpoint'     => rest_url('searchjet/v1/ai/usage'),
             'restNonce'           => wp_create_nonce('wp_rest'),
             'requireEventNonce'   => (int) get_option('searchjet_require_event_nonce', 0),
             'searchApiBaseUrl'    => SEARCHJET_API_BASE_URL . '/api/v1/search',
             'key'                 => isset($clientInfo['public_key']) ? $clientInfo['public_key'] : '',
             'attributes'          => $attrs_list,
+            'session_id'          => session_id() ?: wp_generate_uuid4(),
+            'aiAnswersEnabled'    => (bool) get_option('searchjet_ai_answers_enabled', false),
+            'language'            => function_exists('icl_get_languages') ? substr(get_locale(), 0, 2) : '',
             'ui' => [
-                'showThumbnail'   => (bool) (get_option('searchjet_show_thumbnails', 1)),
-                'showPrice'       => (bool) (get_option('searchjet_show_prices', 1)),
-                'showRating'      => (bool) ($opts['show_rating'] ?? true),
-                'showStock'       => (bool) ($opts['show_stock'] ?? true),
-                'showCategory'    => (bool) (get_option('searchjet_show_categories', 1)),
-                'showExcerpts'    => (bool) (get_option('searchjet_show_excerpts', 1)),
+                'showThumbnail'   => (bool) get_option('searchjet_show_thumbnails', 1),
+                'showPrice'       => (bool) get_option('searchjet_show_prices', 1),
+                'showRating'      => (bool) get_option('searchjet_show_rating', 1),
+                'showStock'       => (bool) get_option('searchjet_show_stock', 1),
+                'showCategory'    => (bool) get_option('searchjet_show_categories', 1),
+                'showExcerpts'    => (bool) get_option('searchjet_show_excerpts', 1),
                 'highlightTerms'  => (bool) ($opts['highlight_term'] ?? true),
                 'viewAllLink'     => (bool) ($opts['view_all_link'] ?? true),
                 'theme'           => get_option('searchjet_theme', 'default'),
-                'primaryColor'    => get_option('searchjet_primary_color', '#007aff'),
+                'primaryColor'    => get_option('searchjet_primary_color', '#000000'),
                 'maxResults'      => (int) get_option('searchjet_max_results', 10),
             ],
-        ];
-
-        $settings['integrations'] = [
-            'ga4' => function_exists('lean_ga4_tracker')
+            'integrations' => [
+                'ga4' => function_exists('lean_ga4_tracker')
+            ]
         ];
 
         // Localize onto the scripts we actually enqueue on the frontend
-        wp_localize_script('searchjet-result', 'SearchJetSettings', $settings);
+        wp_localize_script('searchjet-autocomplete', 'SearchJetSettings', $settings);
 
-        $mode = get_option('searchjet_search_mode', 'js') ?: 'js';
-
-        if (is_search() && $mode === 'js') {
-            wp_enqueue_script(
-                'searchjet-page',
-                plugin_dir_url(dirname(__FILE__)) . 'assets/js/searchjet-page.js',
-                [],
-                $assetVersion,
-                true
-            );
-            // Ensure page script also receives the same settings
-            wp_localize_script('searchjet-page', 'SearchJetSettings', $settings);
-        }
+        // SearchOverride.php will handle search page scripts and use same settings
 
         add_action('wp_head', [__CLASS__, 'outputInlineStyles']);
     }
@@ -236,11 +276,12 @@ class Plugin {
     public static function outputInlineStyles() {
         $opts = get_option('searchjet_ui_options', []);
         $theme = get_option('searchjet_theme', 'default');
-        $primaryColor = get_option('searchjet_primary_color', '#007aff');
+        $primaryColor = get_option('searchjet_primary_color', '#000000');
         ?>
         <style id="searchjet-inline-style">
             :root {
                 --searchjet-primary-color: <?= esc_attr($primaryColor) ?>;
+                --searchjet-text-color: <?= esc_attr($primaryColor) ?>;
             }
             <?php if ($theme && $theme !== 'default'): ?>
             #searchjet-results {

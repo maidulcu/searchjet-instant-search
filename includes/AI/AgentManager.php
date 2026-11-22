@@ -42,7 +42,7 @@ class AgentManager
     public static function handle_save(): void
     {
         if (!current_user_can('manage_options')) {
-            wp_die(__('You do not have permission to perform this action.', 'searchjet-instant-search'));
+            wp_die(esc_html__('You do not have permission to perform this action.', 'searchjet-instant-search'));
         }
         check_admin_referer('searchjet_agents_save');
 
@@ -71,7 +71,7 @@ class AgentManager
     public static function render(): void
     {
         if (!current_user_can('manage_options')) {
-            wp_die(__('You do not have permission to view this page.', 'searchjet-instant-search'));
+            wp_die(esc_html__('You do not have permission to view this page.', 'searchjet-instant-search'));
         }
 
         $agents  = AgentRegistry::all();

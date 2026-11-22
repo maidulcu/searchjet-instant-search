@@ -176,17 +176,48 @@ final class Events
      */
     public static function dailyHealthSnapshot(): array
     {
+        // Collect actual search data from the log backlog
+        $logs = get_option('searchjet_log_backlog', []);
+        $logs = is_array($logs) ? $logs : [];
+
+        $total_searches = count($logs);
+        $zero_results   = 0;
+        $query_freq     = [];
+
+        foreach ($logs as $log) {
+            $query = $log['query'] ?? '';
+            $results_count = isset($log['results']) ? (int) $log['results'] : -1;
+
+            if ($query !== '') {
+                $q_lower = mb_strtolower(trim($query));
+                $query_freq[$q_lower] = ($query_freq[$q_lower] ?? 0) + 1;
+            }
+
+            if ($results_count === 0) {
+                $zero_results++;
+            }
+        }
+
+        // Get top 10 queries
+        arsort($query_freq);
+        $top_queries = [];
+        foreach (array_slice($query_freq, 0, 10, true) as $q => $count) {
+            $top_queries[] = ['query' => $q, 'count' => (int) $count];
+        }
+
         $snapshot = [
-            'total_searches' => null,
-            'zero_results'   => null,
-            'top_queries'    => [],
+            'total_searches' => $total_searches,
+            'zero_results'   => $zero_results,
+            'top_queries'    => $top_queries,
         ];
 
         $payload = DataContracts::searchSnapshot($snapshot);
         $res     = Webhooks::dispatch('health.daily_snapshot', $payload);
 
         Logger::log('info', 'daily_health_snapshot dispatched', [
-            'dispatch' => $res,
+            'total_searches' => $total_searches,
+            'zero_results'   => $zero_results,
+            'dispatch'       => $res,
         ]);
 
         return $res;

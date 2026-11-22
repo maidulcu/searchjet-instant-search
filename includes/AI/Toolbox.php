@@ -124,7 +124,7 @@ class Toolbox
             ], $headers),
             'body'        => wp_json_encode($body),
         ];
-        $res = wp_remote_post(esc_url_raw($url), $args);
+        $res = wp_safe_remote_post(esc_url_raw($url), $args);
         if (is_wp_error($res)) {
             return ['ok' => false, 'code' => 0, 'body' => null, 'error' => $res->get_error_message()];
         }
@@ -154,7 +154,7 @@ class Toolbox
                 'User-Agent'  => 'SearchJet/AI (+wordpress)'
             ], $headers),
         ];
-        $res = wp_remote_get(esc_url_raw($url), $args);
+        $res = wp_safe_remote_get(esc_url_raw($url), $args);
         if (is_wp_error($res)) {
             return ['ok' => false, 'code' => 0, 'body' => null, 'error' => $res->get_error_message()];
         }

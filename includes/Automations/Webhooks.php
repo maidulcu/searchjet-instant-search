@@ -24,10 +24,23 @@ class Webhooks
             ];
         }
 
-        // Allow either the new or legacy option keys
-        $webhook_url = (string) get_option('searchjet_automation_webhook_url');
+        // Resolve the webhook URL based on the selected provider
+        $provider  = (string) get_option('searchjet_webhook_provider', 'custom');
+        $webhook_url = '';
+        switch ($provider) {
+            case 'n8n':
+                $webhook_url = (string) get_option('searchjet_webhook_url_n8n', '');
+                break;
+            case 'zapier':
+                $webhook_url = (string) get_option('searchjet_webhook_url_zapier', '');
+                break;
+        }
+        // Fallback to generic URL (or legacy key)
         if ($webhook_url === '') {
-            $webhook_url = (string) get_option('searchjet_webhook_url');
+            $webhook_url = (string) get_option('searchjet_webhook_url', '');
+        }
+        if ($webhook_url === '') {
+            $webhook_url = (string) get_option('searchjet_automation_webhook_url', '');
         }
         $webhook_url = apply_filters('searchjet/automation/webhook_url', $webhook_url, $event, $payload);
 
@@ -73,7 +86,7 @@ class Webhooks
             'timeout' => 12,
         ];
 
-        $resp = wp_remote_post($webhook_url, $args);
+        $resp = wp_safe_remote_post($webhook_url, $args);
         if (is_wp_error($resp)) {
             return [
                 'ok' => false,
@@ -89,7 +102,7 @@ class Webhooks
 
         // One immediate retry on 5xx
         if ($code >= 500) {
-            $resp = wp_remote_post($webhook_url, $args);
+            $resp = wp_safe_remote_post($webhook_url, $args);
             if (!is_wp_error($resp)) {
                 $code = (int) wp_remote_retrieve_response_code($resp);
                 $body = (string) wp_remote_retrieve_body($resp);

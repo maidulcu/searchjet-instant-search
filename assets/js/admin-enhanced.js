@@ -96,13 +96,17 @@
         toggleApiKeyVisibility: function() {
             const $input = $('#searchjet_hosted_api_key');
             const $toggle = $(this);
+            const $eyeOpen = $toggle.find('.searchjet-eye-open');
+            const $eyeClosed = $toggle.find('.searchjet-eye-closed');
             
             if ($input.attr('type') === 'password') {
                 $input.attr('type', 'text');
-                $toggle.html('🙈');
+                $eyeOpen.hide();
+                $eyeClosed.show();
             } else {
                 $input.attr('type', 'password');
-                $toggle.html('👁️');
+                $eyeOpen.show();
+                $eyeClosed.hide();
             }
         },
 
@@ -132,7 +136,8 @@
         },
 
         checkConnectionStatus: function() {
-            const apiKey = $('#searchjet_hosted_api_key').val().trim();
+            const val = $('#searchjet_hosted_api_key').val();
+            const apiKey = val ? val.trim() : '';
             
             if (!apiKey) return;
             
@@ -194,7 +199,7 @@
             }, 2000);
         },
 
-        showNotification: function(message, type = 'info') {
+        showNotification: function(message, type = 'info', persistent = false) {
             const $notification = $(`
                 <div class="searchjet-notification searchjet-notification-${type}">
                     <span>${message}</span>
@@ -208,11 +213,13 @@
                 $notification.addClass('show');
             }, 100);
             
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                $notification.removeClass('show');
-                setTimeout(() => $notification.remove(), 300);
-            }, 5000);
+            // Auto-hide after 5 seconds (unless persistent)
+            if (!persistent) {
+                setTimeout(() => {
+                    $notification.removeClass('show');
+                    setTimeout(() => $notification.remove(), 300);
+                }, 5000);
+            }
             
             // Manual close
             $notification.find('.searchjet-notification-close').on('click', function() {
@@ -249,46 +256,144 @@
 
         // Reindexing functionality
         handleReindex: function() {
-            // console.log('%c🔍 SearchJet Reindex Triggered', 'color: #0073aa; font-size: 14px; font-weight: bold;');
-            // console.log('%c🚀 Starting reindexing process...', 'color: #28a745; font-size: 12px;');
-            // console.log('%c🦁 Preparing reindex request...', 'color: #ff9800; font-size: 12px;');
-            // console.log('%c🦁 Sending AJAX request to server...', 'color: #ff5722; font-size: 12px;');
-            // console.log('%c🦁 Awaiting server response...', 'color: #9c27b0; font-size: 12px;');
-            const $btn = $('#searchjet-reindex-btn');
-            const $progress = $('#searchjet-reindex-progress');
-            const $progressBar = $('#searchjet-progress-bar');
-            const $progressText = $('#searchjet-progress-text');
-            
+            var adminData = window.SearchJetAdmin;
+            if (!adminData || !adminData.ajax_url || !adminData.ajax_action) {
+                SearchJetAdminApp.showNotification(
+                    'SearchJet configuration is missing. Try refreshing the page.',
+                    'error'
+                );
+                return;
+            }
+
+            // Pre-check daily reindex limit
+            if (adminData.reindex_limit) {
+                var used = adminData.reindex_limit.used || 0;
+                var max = adminData.reindex_limit.max || 1;
+                if (used >= max) {
+                    SearchJetAdminApp.showNotification(
+                        adminData.strings.limit_reached || 'Daily reindex limit reached.',
+                        'error',
+                        true
+                    );
+                    return;
+                }
+            }
+
+            var $btn = $('#searchjet-reindex-btn');
+            var $progress = $('#searchjet-reindex-progress');
+            var $progressBar = $('#searchjet-progress-bar');
+            var $progressText = $('#searchjet-progress-text');
+
             $btn.prop('disabled', true).html('<span class="searchjet-loading"></span> Reindexing...');
             $progress.show();
-            
-//             console.log('%c🧠 AJAX Debug:', 'color:#00bcd4; font-weight:bold;');
-// console.log('AJAX URL:', window.SearchJetAdmin.ajax_url);
-// console.log('Action:', window.SearchJetAdmin.ajax_action);
-// console.log('Nonce:', window.SearchJetAdmin.nonce);
 
-            $.post(window.SearchJetAdmin.ajax_url, {
-                action: window.SearchJetAdmin.ajax_action,
-                nonce: window.SearchJetAdmin.nonce
+            $.post(adminData.ajax_url, {
+                action: adminData.ajax_action,
+                nonce: adminData.nonce
             })
             .done(function(response) {
                 if (response.success) {
+                    var count = response.data.document_count;
                     $progressBar.css('width', '100%');
                     $progressText.text(response.data.message || 'Reindexing completed');
-                    $btn.removeClass('searchjet-btn-primary').addClass('searchjet-btn-success').html('✓ Complete');
+                    $btn.removeClass('searchjet-btn-primary').addClass('searchjet-btn-success').html('\u2713 Complete');
+
+                    // Update all displayed document counts on the page
+                    var countFormatted = parseInt(count, 10).toLocaleString();
+                    $('.text-5xl').each(function() {
+                        var $el = $(this);
+                        if ($el.next().filter('.text-gray-600').text().indexOf('Indexed Documents') !== -1) {
+                            $el.text(countFormatted);
+                        }
+                    });
+
+                    // Update reindexes today counter
+                    if (response.data.reindexes_today !== undefined) {
+                        adminData.reindex_limit.used = response.data.reindexes_today;
+                        $('.text-4xl').each(function() {
+                            var $el = $(this);
+                            if ($el.next().filter('.text-gray-600').text().indexOf('Reindexes Today') !== -1) {
+                                $el.text(response.data.reindexes_today);
+                            }
+                        });
+                        // Disable button if limit now reached
+                        if (adminData.reindex_limit.used >= adminData.reindex_limit.max) {
+                            $btn.prop('disabled', true).removeClass('searchjet-btn-success').addClass('searchjet-btn-primary').html('Reindex All Content');
+                            $progressText.text('Daily reindex limit reached. The limit resets tomorrow.');
+                        }
+                    }
+
+                    SearchJetAdminApp.showNotification(
+                        (response.data.message || 'Reindexing completed!') + ' (' + countFormatted + ' documents)',
+                        'success',
+                        true
+                    );
                 } else {
-                    $btn.removeClass('searchjet-btn-primary').addClass('searchjet-btn-danger').html('✗ Error');
+                    var message = response.data && response.data.message
+                        ? response.data.message
+                        : 'Reindexing failed. Please check your settings and try again.';
+                    $progressText.text(message);
+                    SearchJetAdminApp.showNotification(message, 'error', true);
+                    $btn.removeClass('searchjet-btn-primary').addClass('searchjet-btn-danger').html('\u2717 Error');
+                }
+            })
+            .fail(function(jqXHR, textStatus) {
+                var message = 'Reindexing request failed.';
+                if (jqXHR.responseJSON && jqXHR.responseJSON.data && jqXHR.responseJSON.data.message) {
+                    message = jqXHR.responseJSON.data.message;
+                } else if (textStatus === 'timeout') {
+                    message = 'Request timed out. Your server may have too many posts to process.';
+                } else if (textStatus === 'parsererror') {
+                    message = 'Invalid server response. Check the PHP error log.';
+                }
+                $progressText.text(message);
+                SearchJetAdminApp.showNotification(message, 'error', true);
+                $btn.removeClass('searchjet-btn-primary').addClass('searchjet-btn-danger').html('\u2717 Error');
+            })
+            .always(function() {
+                setTimeout(function() {
+                    $btn.prop('disabled', false)
+                        .removeClass('searchjet-btn-success searchjet-btn-danger')
+                        .addClass('searchjet-btn-primary')
+                        .text('Reindex All Content');
+                    $progress.hide();
+                }, 5000);
+});
+        },
+
+        // Save attributes via AJAX
+        handleSaveAttributes: function() {
+            var adminData = window.SearchJetAdmin;
+            if (!adminData || !adminData.ajax_url || !adminData.attributes_nonce) {
+                SearchJetAdminApp.showNotification('SearchJet configuration is missing. Try refreshing the page.', 'error');
+                return;
+            }
+            var attributesField = document.getElementById('searchjet_attributes');
+            if (!attributesField) {
+                SearchJetAdminApp.showNotification('Attributes field not found.', 'error');
+                return;
+            }
+            var $btn = $('#searchjet-save-attributes-btn');
+            $btn.prop('disabled', true).html('<span class="searchjet-loading"></span> Saving...');
+            $.post(adminData.ajax_url, {
+                action: 'searchjet_save_attributes',
+                nonce: adminData.attributes_nonce,
+                attributes: attributesField.value
+            })
+            .done(function(response) {
+                if (response.success) {
+                    adminData.attributes = response.data.attributes || [];
+                    SearchJetAdminApp.showNotification(response.data.message || 'Attributes saved successfully', 'success', true);
+                } else {
+                    var message = response.data && response.data.message ? response.data.message : 'Failed to save attributes.';
+                    SearchJetAdminApp.showNotification(message, 'error', true);
                 }
             })
             .fail(function() {
-                $btn.removeClass('searchjet-btn-primary').addClass('searchjet-btn-danger').html('✗ Error');
+                SearchJetAdminApp.showNotification('Failed to save attributes. Please try again.', 'error', true);
             })
             .always(function() {
-                setTimeout(() => {
-                    $btn.prop('disabled', false).removeClass('searchjet-btn-success searchjet-btn-danger')
-                        .addClass('searchjet-btn-primary').text('Reindex All Content');
-                    $progress.hide();
-                }, 3000);
+                $btn.prop('disabled', false).text('Save Attributes');
             });
         }
     };
@@ -296,6 +401,7 @@
     // Initialize when document is ready
     $(document).ready(function() {
         SearchJetAdminApp.init();
+        initAttributesBuilder();
         
         // Restore active tab from localStorage
         const activeTab = localStorage.getItem('searchjet_active_tab');
@@ -308,18 +414,27 @@
         // Bind reindex button
         $(document).on('click', '#searchjet-reindex-btn', SearchJetAdminApp.handleReindex);
         
+        // Bind save attributes button
+        $(document).on('click', '#searchjet-save-attributes-btn', SearchJetAdminApp.handleSaveAttributes);
+        
         // Fallback for API key toggle if jQuery binding fails
         document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('searchjet-api-key-toggle')) {
+            const button = e.target.closest('.searchjet-api-key-toggle');
+            if (button) {
                 const input = document.getElementById('searchjet_hosted_api_key');
-                const button = e.target;
+                const eyeOpen = button.querySelector('.searchjet-eye-open');
+                const eyeClosed = button.querySelector('.searchjet-eye-closed');
                 
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    button.innerHTML = '🙈';
-                } else {
-                    input.type = 'password';
-                    button.innerHTML = '👁️';
+                if (input && eyeOpen && eyeClosed) {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        eyeOpen.style.display = 'none';
+                        eyeClosed.style.display = 'block';
+                    } else {
+                        input.type = 'password';
+                        eyeOpen.style.display = 'block';
+                        eyeClosed.style.display = 'none';
+                    }
                 }
             }
         });
@@ -350,6 +465,134 @@
 
     // Expose SearchJetAdmin globally
     window.SearchJetAdminApp = SearchJetAdminApp;
+
+    // Quick Presets & Attributes Builder
+    const attributesPresets = {
+        basic: ['id', 'title', 'url', 'type', 'excerpt'],
+        woocommerce: ['id', 'title', 'url', 'type', 'excerpt', 'image', 'price', 'sku', 'stock_status', 'categories'],
+        advanced: ['id', 'title', 'url', 'type', 'excerpt', 'image', 'price', 'sku', 'stock_status', 'categories', 'tags', 'meta', 'author']
+    };
+
+    let selectedAttributes = [];
+    let attributesInitialized = false;
+
+    function initAttributesBuilder() {
+        if (attributesInitialized) return;
+        const attributesField = document.getElementById('searchjet_attributes');
+        if (!attributesField) return;
+        attributesInitialized = true;
+        const currentValue = attributesField.value;
+        selectedAttributes = currentValue ? currentValue.split(',').map(function(attr) { return attr.trim(); }).filter(function(attr) { return attr; }) : [];
+        // Default to "basic" preset if no attributes are saved
+        if (selectedAttributes.length === 0) {
+            applyPreset('basic');
+        } else {
+            renderAttributesList();
+        }
+        bindAttributeEvents();
+    }
+
+    function renderAttributesList() {
+        const container = document.getElementById('searchjet-attributes-list');
+        if (!container) return;
+        container.innerHTML = '';
+        selectedAttributes.forEach(function(attr, index) {
+            const item = document.createElement('div');
+            item.className = 'searchjet-attribute-item';
+            const name = document.createElement('span');
+            name.className = 'searchjet-attribute-name';
+            name.textContent = attr;
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'searchjet-remove-attr';
+            removeButton.dataset.index = String(index);
+            removeButton.textContent = '\u00d7';
+            item.appendChild(name);
+            item.appendChild(removeButton);
+            container.appendChild(item);
+        });
+        updateHiddenField();
+        updatePresetActiveState();
+    }
+
+    function updateHiddenField() {
+        const attributesField = document.getElementById('searchjet_attributes');
+        if (attributesField) {
+            attributesField.value = selectedAttributes.join(',');
+        }
+    }
+
+    function applyPreset(presetName) {
+        if (!attributesPresets[presetName]) return;
+        selectedAttributes = attributesPresets[presetName].slice();
+        renderAttributesList();
+    }
+
+    function addAttribute(attr) {
+        if (attr && selectedAttributes.indexOf(attr) === -1) {
+            selectedAttributes.push(attr);
+            renderAttributesList();
+        }
+    }
+
+    function removeAttribute(index) {
+        selectedAttributes.splice(index, 1);
+        renderAttributesList();
+    }
+
+    function updatePresetActiveState() {
+        document.querySelectorAll('.searchjet-preset-btn').forEach(function(btn) {
+            const preset = btn.getAttribute('data-preset');
+            const presetAttributes = attributesPresets[preset] || [];
+            const isActive = presetAttributes.length === selectedAttributes.length
+                && presetAttributes.every(function(attr, i) { return attr === selectedAttributes[i]; });
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+    }
+
+    function bindAttributeEvents() {
+        document.querySelectorAll('.searchjet-preset-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const preset = this.getAttribute('data-preset');
+                applyPreset(preset);
+            });
+        });
+
+        const addButton = document.getElementById('searchjet-add-btn');
+        if (addButton) {
+            addButton.addEventListener('click', function() {
+                const input = document.getElementById('searchjet-new-attribute');
+                if (!input) return;
+                const value = input.value.trim();
+                if (value) {
+                    addAttribute(value);
+                    input.value = '';
+                }
+            });
+        }
+
+        const newAttrInput = document.getElementById('searchjet-new-attribute');
+        if (newAttrInput) {
+            newAttrInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    var addBtn = document.getElementById('searchjet-add-btn');
+                    if (addBtn) addBtn.click();
+                }
+            });
+        }
+
+        const attributesList = document.getElementById('searchjet-attributes-list');
+        if (attributesList) {
+            attributesList.addEventListener('click', function(e) {
+                if (e.target.classList.contains('searchjet-remove-attr')) {
+                    var index = parseInt(e.target.getAttribute('data-index'), 10);
+                    removeAttribute(index);
+                }
+            });
+        }
+    }
 
 })(jQuery);
 

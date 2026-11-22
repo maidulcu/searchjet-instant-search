@@ -58,19 +58,19 @@ class Registry
             'id' => 'daily_health_snapshot',
             'label' => 'Daily Health Snapshot',
             'description' => 'Sends a daily summary of search health metrics.',
-            'callback' => 'SearchJet\Automations\Events::dailyHealthSnapshot',
+            'callback' => [Events::class, 'dailyHealthSnapshot'],
         ]);
         self::register([
             'id' => 'zero_result_burst',
             'label' => 'Zero Result Burst',
             'description' => 'Triggers when a burst of zero-result searches is detected.',
-            'callback' => 'SearchJet\Automations\Events::zeroResultBurst',
+            'callback' => [Events::class, 'recordZeroResult'],
         ]);
         self::register([
             'id' => 'index_summary',
             'label' => 'Index Summary',
             'description' => 'Provides a summary of the search index.',
-            'callback' => 'SearchJet\Automations\Events::indexSummary',
+            'callback' => [Events::class, 'indexCompleted'],
         ]);
     }
 }
